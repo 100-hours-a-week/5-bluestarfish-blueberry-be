@@ -75,7 +75,7 @@ jobs:
             
             
             sudo docker run -d --name your-container-name \
-              -p 80:80 \
+              -p 8080:8080 \
               -e ENV_VAR_NAME=value \
               ${{ secrets.DOCKER_REPO }}:init
             
