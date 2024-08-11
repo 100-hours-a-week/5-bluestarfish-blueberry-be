@@ -52,9 +52,10 @@ jobs:
       # dockerfile을 통해 이미지 빌드 & docker repository에 push
       - name: Docker build & push to docker repo
         run: |
-          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:init .
           docker push ${{ secrets.DOCKER_REPO }}:init
+          
 
       # appleboy/ssh-action@master 액션을 사용하여 지정한 서버에 ssh 로 접속하고 스크립트 실행
       # 도커의 기존 프로세스 제거 & docker repository 로부터 위에서 push한 내용을 pull 받아서 실행
