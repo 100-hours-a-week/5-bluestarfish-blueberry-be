@@ -1,7 +1,9 @@
 package com.bluestarfish.blueberry.health.controller;
 
+import com.bluestarfish.blueberry.health.dto.HealthResponse;
+import com.bluestarfish.common.dto.ApiSuccessResponse;
+import com.bluestarfish.common.handler.ResponseHandler;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -11,8 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 public class HealthController {
 
     @GetMapping("/health")
-    public ResponseEntity<Void> checkHealth() {
-        return new ResponseEntity<>(HttpStatus.OK);
+    public ApiSuccessResponse checkHealth() {
+        return ResponseHandler.handleSuccessResponse(new HealthResponse("200 OK"), HttpStatus.OK);
     }
 
 }
