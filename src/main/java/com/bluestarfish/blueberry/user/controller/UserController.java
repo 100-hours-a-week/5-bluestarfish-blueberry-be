@@ -4,10 +4,12 @@ import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSu
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
+import com.bluestarfish.blueberry.user.dto.UpdateUserRequest;
 import com.bluestarfish.blueberry.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -35,5 +37,14 @@ public class UserController {
             @PathVariable("userId") Long id
     ) {
         return handleSuccessResponse(userService.findById(id), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{userId}")
+    public ApiSuccessResponse<?> updateUser(
+            @PathVariable("userId") Long id,
+            @RequestBody UpdateUserRequest updateUserRequest
+            ) {
+        userService.updateUser(id, updateUserRequest);
+        return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 }
