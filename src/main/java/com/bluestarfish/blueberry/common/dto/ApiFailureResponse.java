@@ -1,7 +1,7 @@
-package com.bluestarfish.common.dto;
+package com.bluestarfish.blueberry.common.dto;
 
 
-import com.bluestarfish.common.dto.ApiFailureResponse.CommonFailureData;
+import com.bluestarfish.blueberry.common.dto.ApiFailureResponse.CommonFailureData;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

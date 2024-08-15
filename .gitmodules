@@ -1,0 +1,3 @@
+[submodule "blueberry-submodule"]
+	path = blueberry-submodule
+	url = https://github.com/BenchPress200/blueberry-submodule

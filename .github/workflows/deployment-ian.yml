@@ -1,13 +1,12 @@
 name: init CI/CD
 
-# 파일 실행 트리거 설정
 on:
-  push:
-    branches:
-      - "main"
-  pull_request:
-    branches:
-      - "main"
+#  push:
+#    branches:
+#      - "main"
+#  pull_request:
+#    branches:
+#      - "main"
   workflow_dispatch:
     inputs:
       logLevel:
@@ -47,7 +46,8 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build -x test
+          ./gradlew clean build -x test -Pprofile=prod
+          
 
       # dockerfile을 통해 이미지 빌드 & docker repository에 push
       - name: Docker build & push to docker repo

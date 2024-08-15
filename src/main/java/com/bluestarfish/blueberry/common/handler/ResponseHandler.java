@@ -1,8 +1,8 @@
-package com.bluestarfish.common.handler;
+package com.bluestarfish.blueberry.common.handler;
 
 
-import com.bluestarfish.common.dto.ApiFailureResponse;
-import com.bluestarfish.common.dto.ApiSuccessResponse;
+import com.bluestarfish.blueberry.common.dto.ApiFailureResponse;
+import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import org.springframework.http.HttpStatus;
 
 public class ResponseHandler {
