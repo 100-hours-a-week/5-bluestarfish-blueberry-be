@@ -7,5 +7,6 @@ import com.bluestarfish.blueberry.user.dto.UserResponse;
 public interface UserService {
     void join(JoinRequest joinRequest);
     UserResponse findById(Long id);
-    void updateUser(Long id, UpdateUserRequest updateUserRequest);
+    void update(Long id, UpdateUserRequest updateUserRequest);
+    void withdraw(Long id);
 }

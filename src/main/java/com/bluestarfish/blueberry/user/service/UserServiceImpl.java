@@ -6,6 +6,7 @@ import com.bluestarfish.blueberry.user.dto.UserResponse;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
+import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -31,7 +32,7 @@ public class UserServiceImpl implements UserService {
     public UserResponse findById(
             Long id
     ) {
-        User user = userRepository.findById(id).orElseThrow(
+        User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
         );
 
@@ -39,11 +40,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateUser(
+    public void update(
         Long id,
         UpdateUserRequest updateUserRequest
     ) {
-        User user = userRepository.findById(id).orElseThrow(
+        User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
         );
 
@@ -55,5 +56,16 @@ public class UserServiceImpl implements UserService {
 
         Optional.ofNullable(updateUserRequest.getPassword())
                 .ifPresent(user::setPassword);
+    }
+
+    @Override
+    public void withdraw(
+            Long id
+    ) {
+        User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
+                () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
+        );
+
+        user.setDeletedAt(LocalDateTime.now());
     }
 }

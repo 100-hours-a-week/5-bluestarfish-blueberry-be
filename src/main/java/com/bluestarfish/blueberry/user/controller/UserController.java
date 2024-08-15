@@ -8,6 +8,7 @@ import com.bluestarfish.blueberry.user.dto.UpdateUserRequest;
 import com.bluestarfish.blueberry.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -40,11 +41,19 @@ public class UserController {
     }
 
     @PatchMapping("/{userId}")
-    public ApiSuccessResponse<?> updateUser(
+    public ApiSuccessResponse<?> update(
             @PathVariable("userId") Long id,
             @RequestBody UpdateUserRequest updateUserRequest
             ) {
-        userService.updateUser(id, updateUserRequest);
+        userService.update(id, updateUserRequest);
+        return handleSuccessResponse(HttpStatus.NO_CONTENT);
+    }
+
+    @DeleteMapping("/{userId}")
+    public ApiSuccessResponse<?> withdraw(
+            @PathVariable("userId") Long id
+    ) {
+        userService.withdraw(id);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 }
