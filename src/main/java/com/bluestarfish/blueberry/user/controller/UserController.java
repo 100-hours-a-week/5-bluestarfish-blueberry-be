@@ -4,7 +4,7 @@ import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSu
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
-import com.bluestarfish.blueberry.user.dto.UpdateUserRequest;
+import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -43,9 +43,9 @@ public class UserController {
     @PatchMapping("/{userId}")
     public ApiSuccessResponse<?> update(
             @PathVariable("userId") Long id,
-            @RequestBody UpdateUserRequest updateUserRequest
+            @RequestBody UserUpdateRequest userUpdateRequest
             ) {
-        userService.update(id, updateUserRequest);
+        userService.update(id, userUpdateRequest);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
@@ -56,4 +56,13 @@ public class UserController {
         userService.withdraw(id);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
+
+    @GetMapping("/nickname")
+    public ApiSuccessResponse<?> validateNickname(
+            @RequestParam("nickname") String nickname
+    ) {
+        userService.validateNickname(nickname);
+        return handleSuccessResponse(HttpStatus.OK);
+    }
+
 }

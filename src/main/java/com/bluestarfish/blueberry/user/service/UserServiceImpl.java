@@ -1,7 +1,7 @@
 package com.bluestarfish.blueberry.user.service;
 
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
-import com.bluestarfish.blueberry.user.dto.UpdateUserRequest;
+import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.dto.UserResponse;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
@@ -42,19 +42,19 @@ public class UserServiceImpl implements UserService {
     @Override
     public void update(
         Long id,
-        UpdateUserRequest updateUserRequest
+        UserUpdateRequest userUpdateRequest
     ) {
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
         );
 
-        Optional.ofNullable(updateUserRequest.getNickname())
+        Optional.ofNullable(userUpdateRequest.getNickname())
                 .ifPresent(user::setNickname);
 
-        Optional.ofNullable(updateUserRequest.getProfileImage())
+        Optional.ofNullable(userUpdateRequest.getProfileImage())
                 .ifPresent(user::setProfileImage);
 
-        Optional.ofNullable(updateUserRequest.getPassword())
+        Optional.ofNullable(userUpdateRequest.getPassword())
                 .ifPresent(user::setPassword);
     }
 
@@ -62,10 +62,19 @@ public class UserServiceImpl implements UserService {
     public void withdraw(
             Long id
     ) {
-        User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
-        );
+        User user = userRepository.findByIdAndDeletedAtIsNull(id)
+                .orElseThrow(
+                    () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
+                );
 
         user.setDeletedAt(LocalDateTime.now());
+    }
+
+    @Override
+    public void validateNickname(String nickname) {
+        userRepository.findByNicknameAndDeletedAtIsNull(nickname)
+                .ifPresent(user -> {
+                    throw new UserException(nickname + " already in use", HttpStatus.CONFLICT);
+                });
     }
 }
