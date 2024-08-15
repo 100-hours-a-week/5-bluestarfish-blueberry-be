@@ -4,6 +4,7 @@ import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSu
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
+import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
 import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -65,4 +66,11 @@ public class UserController {
         return handleSuccessResponse(HttpStatus.OK);
     }
 
+    @PatchMapping("/password")
+    public ApiSuccessResponse<?> resetPassword(
+            @RequestBody PasswordResetRequest passwordResetRequest
+            ) {
+        userService.resetPassword(passwordResetRequest);
+        return handleSuccessResponse(HttpStatus.NO_CONTENT);
+    }
 }

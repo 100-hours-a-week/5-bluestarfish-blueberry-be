@@ -1,6 +1,7 @@
 package com.bluestarfish.blueberry.user.service;
 
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
+import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
 import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.dto.UserResponse;
 import com.bluestarfish.blueberry.user.entity.User;
@@ -76,5 +77,15 @@ public class UserServiceImpl implements UserService {
                 .ifPresent(user -> {
                     throw new UserException(nickname + " already in use", HttpStatus.CONFLICT);
                 });
+    }
+
+    @Override
+    public void resetPassword(PasswordResetRequest passwordResetRequest) {
+        User user = userRepository.findByEmailAndDeletedAtIsNull(passwordResetRequest.getEmail())
+                .orElseThrow(
+                        () -> new UserException("A user with " + passwordResetRequest.getEmail() + " not found", HttpStatus.NOT_FOUND)
+                );
+
+        user.setPassword(passwordEncoder.encode(passwordResetRequest.getPassword()));
     }
 }
