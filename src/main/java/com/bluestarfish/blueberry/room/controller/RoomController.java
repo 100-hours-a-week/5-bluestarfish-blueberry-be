@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -47,15 +46,6 @@ public class RoomController {
             @RequestParam(name = "recruited") boolean isRecruited
             ) {
         return handleSuccessResponse(roomService.getAllRooms(), HttpStatus.OK);
-    }
-
-    @PutMapping("/{roomId}")
-    public ApiSuccessResponse<?> updateStudyRoom(
-            @PathVariable("roomId") Long id,
-            @RequestBody RoomRequest roomRequest
-    ) {
-        roomService.updateRoomById(id, roomRequest);
-        return handleSuccessResponse(HttpStatus.OK);
     }
 
     @DeleteMapping("/{roomId}")

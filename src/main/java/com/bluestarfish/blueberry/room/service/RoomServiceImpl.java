@@ -38,19 +38,6 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public void updateRoomById(Long id, RoomRequest roomRequest) {
-        Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
-
-        room.setTitle(roomRequest.getTitle());
-        room.setMaxUsers(roomRequest.getMaxUsers());
-        room.setCamEnabled(roomRequest.isCamEnabled());
-        room.setPassword(roomRequest.getPassword());
-        room.setThumbnail(roomRequest.getThumbnail());
-        room.setDescription(roomRequest.getDescription());
-    }
-
-    @Override
     public void deleteRoomById(Long id) {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
