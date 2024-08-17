@@ -3,6 +3,7 @@ package com.bluestarfish.blueberry.room.controller;
 import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
+import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.service.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -39,7 +41,11 @@ public class RoomController {
     }
 
     @GetMapping()
-    public ApiSuccessResponse<?> getStudyRoomList() {
+    public ApiSuccessResponse<?> getStudyRoomList(
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "type") PostType postType,
+            @RequestParam(name = "recruited") boolean isRecruited
+            ) {
         return handleSuccessResponse(roomService.getAllRooms(), HttpStatus.OK);
     }
 
