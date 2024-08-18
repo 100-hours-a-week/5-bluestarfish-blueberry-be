@@ -55,6 +55,7 @@ public class UserServiceImpl implements UserService {
         Optional.ofNullable(userUpdateRequest.getProfileImage())
                 .ifPresent(user::setProfileImage);
 
+        // FIXME: 인코딩 필요
         Optional.ofNullable(userUpdateRequest.getPassword())
                 .ifPresent(user::setPassword);
     }
