@@ -1,7 +1,6 @@
-package com.bluestarfish.blueberry.chat.entity;
+package com.bluestarfish.blueberry.roomchat.entity;
 
 import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,15 +28,11 @@ public class Chat {
     @Field("created_at")
     private LocalDateTime createdAt;
 
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
-
     @Builder
-    public Chat(Long roomId, Long senderId, String message) {
+    public Chat(Long roomId, Long senderId, String message, LocalDateTime createdAt) {
         this.roomId = roomId;
         this.senderId = senderId;
         this.message = message;
+        this.createdAt = createdAt;
     }
 }

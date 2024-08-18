@@ -1,7 +1,9 @@
-package com.bluestarfish.blueberry.chat.service;
+package com.bluestarfish.blueberry.roomchat.service;
 
-import com.bluestarfish.blueberry.chat.entity.Chat;
-import com.bluestarfish.blueberry.chat.repository.ChatRepository;
+import com.bluestarfish.blueberry.roomchat.entity.Chat;
+import com.bluestarfish.blueberry.roomchat.repository.ChatRepository;
+import java.time.LocalDateTime;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,8 +23,15 @@ public class ChatServiceImpl implements ChatService {
                 .roomId(roomId)
                 .senderId(senderId)
                 .message(message)
+                .createdAt(LocalDateTime.now())
                 .build();
 
         return chatRepository.save(chat);
     }
+
+    @Override
+    public List<Chat> listChats(Long roomId) {
+        return chatRepository.findAllByRoomId(roomId);
+    }
+
 }
