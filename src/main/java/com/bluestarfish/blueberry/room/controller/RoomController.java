@@ -42,10 +42,10 @@ public class RoomController {
     @GetMapping()
     public ApiSuccessResponse<?> getStudyRoomList(
             @RequestParam(name = "page") int page,
-            @RequestParam(name = "type") PostType postType,
-            @RequestParam(name = "recruited") boolean isRecruited
+            @RequestParam(name = "type") String keyword,
+            @RequestParam(name = "camEnabled") boolean isCamEnabled
             ) {
-        return handleSuccessResponse(roomService.getAllRooms(), HttpStatus.OK);
+        return handleSuccessResponse(roomService.getAllRooms(page, keyword, isCamEnabled), HttpStatus.OK);
     }
 
     @DeleteMapping("/{roomId}")

@@ -7,7 +7,14 @@ import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,10 +38,15 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public List<RoomResponse> getAllRooms() {
-        return roomRepository.findByDeletedAtIsNull().stream()
+    public Page<RoomResponse> getAllRooms(int page, String keyword, boolean isCamEnabled) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
+        Page<Room> roomPage = roomRepository.findByKeywordAndIsCamEnabled(keyword, isCamEnabled, pageable);
+
+        List<RoomResponse> roomResponses = roomPage.getContent().stream()
                 .map(RoomResponse::from)
-                .toList();
+                .collect(Collectors.toList());
+
+        return new PageImpl<>(roomResponses, pageable, roomPage.getTotalElements());
     }
 
     @Override
