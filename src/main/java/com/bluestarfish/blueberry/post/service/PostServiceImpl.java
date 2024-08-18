@@ -3,6 +3,7 @@ package com.bluestarfish.blueberry.post.service;
 import com.bluestarfish.blueberry.post.dto.PostRequest;
 import com.bluestarfish.blueberry.post.dto.PostResponse;
 import com.bluestarfish.blueberry.post.entity.Post;
+import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.post.exception.PostException;
 import com.bluestarfish.blueberry.post.repository.PostRepository;
 import com.bluestarfish.blueberry.room.entity.Room;
@@ -12,7 +13,14 @@ import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,10 +53,18 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostResponse> getAllPosts() {
-        return postRepository.findAll().stream()
+    public Page<PostResponse> getAllPosts(
+            int page,
+            PostType postType,
+            boolean isRecruited
+    ) {
+        Pageable pageable = PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
+        Page<Post> postPage = postRepository.findByPostTypeAndIsRecruited(postType, isRecruited, pageable);
+
+        List<PostResponse> postResponses = postPage.getContent().stream()
                 .map(PostResponse::from)
-                .toList();
+                .collect(Collectors.toList());
+        return new PageImpl<>(postResponses, pageable, postPage.getTotalElements());
     }
 
     @Override

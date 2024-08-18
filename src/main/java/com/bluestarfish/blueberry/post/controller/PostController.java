@@ -4,6 +4,7 @@ import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSu
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.post.dto.PostRequest;
+import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -39,8 +41,12 @@ public class PostController {
     }
 
     @GetMapping
-    public ApiSuccessResponse<?> getPostList() {
-        return handleSuccessResponse(postService.getAllPosts(), HttpStatus.OK);
+    public ApiSuccessResponse<?> getPostList(
+            @RequestParam(name = "page") int page,
+            @RequestParam(name = "type") PostType postType,
+            @RequestParam(name = "recruited") boolean isRecruited
+            ) {
+        return handleSuccessResponse(postService.getAllPosts(page, postType, isRecruited), HttpStatus.OK);
     }
 
     @PutMapping("/{postId}")
