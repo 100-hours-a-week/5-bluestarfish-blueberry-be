@@ -22,6 +22,13 @@ public class RoomRequest {
     private String description;
 
     public Room toEntity() {
-        return new Room(title, maxUsers, camEnabled, password, thumbnail, description);
+        return Room.builder()
+                .title(title)
+                .maxUsers(maxUsers)
+                .camEnabled(camEnabled)
+                .password(password)
+                .thumbnail(thumbnail)
+                .description(description)
+                .build();
     }
 }
