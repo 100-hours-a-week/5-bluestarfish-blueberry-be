@@ -8,6 +8,5 @@ public interface RoomService {
     void createRoom(RoomRequest roomRequest);
     RoomResponse getRoomById(Long id);
     List<RoomResponse> getAllRooms();
-    void updateRoomById(Long id, RoomRequest roomRequest);
     void deleteRoomById(Long id);
 }
