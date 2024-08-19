@@ -2,6 +2,7 @@ package com.bluestarfish.blueberry.auth.controller;
 
 import com.bluestarfish.blueberry.auth.dto.LoginRequest;
 import com.bluestarfish.blueberry.auth.dto.LoginSuccessResult;
+import com.bluestarfish.blueberry.auth.dto.MailAuthRequest;
 import com.bluestarfish.blueberry.auth.service.AuthService;
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import jakarta.servlet.http.Cookie;
@@ -54,5 +55,13 @@ public class AuthController {
     ) {
         authService.logout(userId);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/mail")
+    public ApiSuccessResponse<?> sendMail(
+            @RequestBody MailAuthRequest mailAuthRequest
+    ) {
+        authService.sendMail(mailAuthRequest);
+        return handleSuccessResponse(HttpStatus.CREATED);
     }
 }
