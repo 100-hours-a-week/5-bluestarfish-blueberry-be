@@ -7,16 +7,12 @@ import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.post.exception.PostException;
 import com.bluestarfish.blueberry.post.repository.PostRepository;
 import com.bluestarfish.blueberry.room.entity.Room;
-import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -38,9 +34,9 @@ public class PostServiceImpl implements PostService {
     @Override
     public void createPost(PostRequest postRequest) {
         User user = userRepository.findById(postRequest.getUserId())
-                .orElseThrow(() -> new RuntimeException("User not fount with id: " + postRequest.getUserId()));
+                .orElseThrow(() -> new PostException("User not fount with id: " + postRequest.getUserId(), HttpStatus.NOT_FOUND));
         Room room = roomRepository.findById(postRequest.getRoomId())
-                .orElseThrow(() -> new RoomException("Room not found with id: " + postRequest.getRoomId(), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new PostException("Room not found with id: " + postRequest.getRoomId(), HttpStatus.NOT_FOUND));
         Post post = postRequest.toEntity(user, room);
         postRepository.save(post);
     }
@@ -59,12 +55,12 @@ public class PostServiceImpl implements PostService {
             boolean isRecruited
     ) {
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
-        Page<Post> postPage = postRepository.findByPostTypeAndIsRecruited(postType, isRecruited, pageable);
 
-        List<PostResponse> postResponses = postPage.getContent().stream()
-                .map(PostResponse::from)
-                .collect(Collectors.toList());
-        return new PageImpl<>(postResponses, pageable, postPage.getTotalElements());
+        if(postType == null) {
+            return postRepository.findByIsRecruitedAndDeletedAtIsNull(isRecruited, pageable).map(PostResponse::from);
+        } else {
+            return postRepository.findByPostTypeAndIsRecruitedAndDeletedAtIsNull(postType, isRecruited, pageable).map(PostResponse::from);
+        }
     }
 
     @Override

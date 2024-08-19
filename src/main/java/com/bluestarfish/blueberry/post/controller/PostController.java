@@ -10,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -43,13 +44,13 @@ public class PostController {
     @GetMapping
     public ApiSuccessResponse<?> getPostList(
             @RequestParam(name = "page") int page,
-            @RequestParam(name = "type") PostType postType,
+            @RequestParam(name = "type", required = false) PostType postType,
             @RequestParam(name = "recruited") boolean isRecruited
             ) {
         return handleSuccessResponse(postService.getAllPosts(page, postType, isRecruited), HttpStatus.OK);
     }
 
-    @PutMapping("/{postId}")
+    @PatchMapping("/{postId}")
     public ApiSuccessResponse<?> updatePost(
             @PathVariable("postId") Long id,
             @RequestBody PostRequest postRequest
