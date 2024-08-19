@@ -1,4 +1,4 @@
-package com.bluestarfish.blueberry.user.exception;
+package com.bluestarfish.blueberry.common.exception;
 
 import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleFailureResponse;
 
@@ -10,12 +10,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Slf4j
 @RestControllerAdvice
-public class UserExceptionHandler {
+public class FeedbackExceptionHandler {
 
-    @ExceptionHandler(UserException.class)
-    public ApiFailureResponse<?> handleException(HttpServletRequest request, UserException e) {
+    @ExceptionHandler(FeedbackException.class)
+    public ApiFailureResponse<?> handleException(HttpServletRequest request, FeedbackException e) {
         log.error(e.getMessage());
 
         return handleFailureResponse(e.getMessage(), e.getHttpStatus());
     }
+
 }
+
