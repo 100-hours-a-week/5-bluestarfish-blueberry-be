@@ -2,8 +2,8 @@ package com.bluestarfish.blueberry.user.service;
 
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
 import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
-import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.dto.UserResponse;
+import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
@@ -42,8 +42,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(
-        Long id,
-        UserUpdateRequest userUpdateRequest
+            Long id,
+            UserUpdateRequest userUpdateRequest
     ) {
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
                 .ifPresent(user::setProfileImage);
 
         Optional.ofNullable(userUpdateRequest.getPassword())
-                .ifPresent(user::setPassword);
+                .ifPresent(password -> user.setPassword(passwordEncoder.encode(password)));
     }
 
     @Override
@@ -65,7 +65,7 @@ public class UserServiceImpl implements UserService {
     ) {
         User user = userRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(
-                    () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
+                        () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
                 );
 
         user.setDeletedAt(LocalDateTime.now());
@@ -83,7 +83,8 @@ public class UserServiceImpl implements UserService {
     public void resetPassword(PasswordResetRequest passwordResetRequest) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(passwordResetRequest.getEmail())
                 .orElseThrow(
-                        () -> new UserException("A user with " + passwordResetRequest.getEmail() + " not found", HttpStatus.NOT_FOUND)
+                        () -> new UserException("A user with " + passwordResetRequest.getEmail() + " not found",
+                                HttpStatus.NOT_FOUND)
                 );
 
         user.setPassword(passwordEncoder.encode(passwordResetRequest.getPassword()));
