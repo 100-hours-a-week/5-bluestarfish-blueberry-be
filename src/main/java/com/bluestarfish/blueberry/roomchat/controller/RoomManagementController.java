@@ -1,9 +1,15 @@
 package com.bluestarfish.blueberry.roomchat.controller;
 
+import com.bluestarfish.blueberry.roomchat.dto.RoomManagementDto;
 import com.bluestarfish.blueberry.roomchat.service.RoomManagementService;
+import org.springframework.messaging.handler.annotation.DestinationVariable;
+import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
+@RequestMapping("/api/v1")
 public class RoomManagementController {
 
     private final RoomManagementService roomManagementService;
@@ -12,10 +18,10 @@ public class RoomManagementController {
         this.roomManagementService = roomManagementService;
     }
 
-//    @MessageMapping("/{roomId}/management")
-//    @SendTo("/rooms/{roomId}")
-//    public UserRoom roomControl(@DestinationVariable("roomId") Long roomId, RoomManagement roomManagement) {
-//        UserRoom userRoom = roomManagementService.roomControlUpdate(roomId, roomManagement);
-//        return userRoom;
-//    }
+    @MessageMapping("/{roomId}/management")
+    @SendTo("/rooms/{roomId}")
+    public RoomManagementDto roomControl(@DestinationVariable("roomId") Long roomId,
+                                         RoomManagementDto roomManagementDto) {
+        return roomManagementService.roomControlUpdate(roomId, roomManagementDto);
+    }
 }
