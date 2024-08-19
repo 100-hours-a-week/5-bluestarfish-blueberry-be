@@ -8,6 +8,6 @@ import org.springframework.data.domain.Page;
 public interface RoomService {
     void createRoom(RoomRequest roomRequest);
     RoomResponse getRoomById(Long id);
-    Page<RoomResponse> getAllRooms(int page, String keyword, boolean isCanEnabled);
+    Page<RoomResponse> getAllRooms(int page, String keyword, String isCanEnabled);
     void deleteRoomById(Long id);
 }

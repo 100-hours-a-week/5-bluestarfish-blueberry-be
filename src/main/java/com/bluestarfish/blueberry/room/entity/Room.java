@@ -32,7 +32,7 @@ public class Room {
 
     @ColumnDefault("true")
     @Column(name="cam_enabled", nullable = false)
-    private boolean camEnabled;
+    private String isCamEnabled;
 
     private String password;
 
@@ -55,14 +55,14 @@ public class Room {
     public Room(
         String title,
         int maxUsers,
-        boolean camEnabled,
+        String isCamEnabled,
         String password,
         String thumbnail,
         String description
     ) {
         this.title = title;
         this.maxUsers = maxUsers;
-        this.camEnabled = camEnabled;
+        this.isCamEnabled = isCamEnabled;
         this.password = password;
         this.thumbnail = thumbnail;
         this.description = description;

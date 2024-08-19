@@ -18,7 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/v1/rooms")
+@RequestMapping(value = "/api/v1/rooms", produces = "application/json; charset=utf8")
 @RequiredArgsConstructor
 public class RoomController {
 
@@ -41,9 +41,9 @@ public class RoomController {
 
     @GetMapping()
     public ApiSuccessResponse<?> getStudyRoomList(
-            @RequestParam(name = "page") int page,
-            @RequestParam(name = "type") String keyword,
-            @RequestParam(name = "camEnabled") boolean isCamEnabled
+            @RequestParam(name = "page", defaultValue = "0") int page,
+            @RequestParam(name = "keyword", required = false) String keyword,
+            @RequestParam(name = "isCamEnabled", required = false) String isCamEnabled
             ) {
         return handleSuccessResponse(roomService.getAllRooms(page, keyword, isCamEnabled), HttpStatus.OK);
     }

@@ -38,15 +38,27 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Page<RoomResponse> getAllRooms(int page, String keyword, boolean isCamEnabled) {
+    public Page<RoomResponse> getAllRooms(int page, String keyword, String isCamEnabled) {
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
-        Page<Room> roomPage = roomRepository.findByKeywordAndIsCamEnabled(keyword, isCamEnabled, pageable);
 
-        List<RoomResponse> roomResponses = roomPage.getContent().stream()
-                .map(RoomResponse::from)
-                .collect(Collectors.toList());
-
-        return new PageImpl<>(roomResponses, pageable, roomPage.getTotalElements());
+        // 이후 QueryDSL or @Query 스타일로 변경 검토
+        if(keyword == null && (isCamEnabled == null || isCamEnabled.equals("all"))) { // 검색 keyword가 없고, 캠 여부가 전체 인 경우 조회
+            return roomRepository.findByDeletedAtIsNull(pageable).map(RoomResponse::from);
+        } else if(keyword == null) { // 검색어가 없고, 캠여부가 true or false 인 경우 조회
+            if(isCamEnabled.equals("true")) {
+                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(true, pageable).map(RoomResponse::from);
+            } else {
+                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(false, pageable).map(RoomResponse::from);
+            }
+        } else if(isCamEnabled.equals("all")) { // 검색어가 있고, 캠 여부가 all 인 경우 조회
+            return roomRepository.findByTitleContainingAndDeletedAtIsNull(keyword, pageable).map(RoomResponse::from);
+        } else { // 검색어가 있고, 캠 여부가 true or false 인 경우 조회
+            if(isCamEnabled.equals("true")) {
+                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, true, pageable).map(RoomResponse::from);
+            } else {
+                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, false, pageable).map(RoomResponse::from);
+            }
+        }
     }
 
     @Override

@@ -10,5 +10,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface RoomRepository extends JpaRepository<Room, Long> {
     Optional<Room> findByIdAndDeletedAtIsNull(Long id);
-    Page<Room> findByKeywordAndIsCamEnabled(String keyword, boolean isCamEnabled, Pageable pageable);
+    Page<Room> findByDeletedAtIsNull(Pageable pageable);
+    Page<Room> findByIsCamEnabledAndDeletedAtIsNull(boolean isCamEnabled, Pageable pageable);
+    Page<Room> findByTitleContainingAndDeletedAtIsNull(String keyword, Pageable pageable);
+    Page<Room> findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(String keyword, boolean isCamEnabled, Pageable pageable);
 }

@@ -16,7 +16,7 @@ public class RoomRequest {
     private Long id;
     private String title;
     private int maxUsers;
-    private boolean camEnabled;
+    private String isCamEnabled;
     private String password;
     private String thumbnail;
     private String description;
@@ -25,7 +25,7 @@ public class RoomRequest {
         return Room.builder()
                 .title(title)
                 .maxUsers(maxUsers)
-                .camEnabled(camEnabled)
+                .isCamEnabled(isCamEnabled)
                 .password(password)
                 .thumbnail(thumbnail)
                 .description(description)
