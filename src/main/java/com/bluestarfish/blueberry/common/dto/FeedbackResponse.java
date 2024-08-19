@@ -19,7 +19,9 @@ public class FeedbackResponse {
 
     public static FeedbackResponse from(Feedback feedback) {
         return FeedbackResponse.builder()
-                .nickname(feedback.getUser().getNickname())
+                .nickname(feedback.getUser() != null && feedback.getUser().getNickname() != null
+                        ? feedback.getUser().getNickname()
+                        : "익명")
                 .content(feedback.getContent())
                 .createdAt(feedback.getCreatedAt())
                 .build();
