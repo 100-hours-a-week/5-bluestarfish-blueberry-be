@@ -3,7 +3,6 @@ package com.bluestarfish.blueberry.room.controller;
 import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
-import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.service.RoomService;
 import lombok.RequiredArgsConstructor;
