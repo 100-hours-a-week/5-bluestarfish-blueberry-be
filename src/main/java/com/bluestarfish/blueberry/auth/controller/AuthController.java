@@ -3,6 +3,7 @@ package com.bluestarfish.blueberry.auth.controller;
 import com.bluestarfish.blueberry.auth.dto.LoginRequest;
 import com.bluestarfish.blueberry.auth.dto.LoginSuccessResult;
 import com.bluestarfish.blueberry.auth.dto.MailAuthRequest;
+import com.bluestarfish.blueberry.auth.dto.MailRequest;
 import com.bluestarfish.blueberry.auth.service.AuthService;
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import jakarta.servlet.http.Cookie;
@@ -59,9 +60,19 @@ public class AuthController {
 
     @PostMapping("/mail")
     public ApiSuccessResponse<?> sendMail(
-            @RequestBody MailAuthRequest mailAuthRequest
+            @RequestBody MailRequest mailRequest
     ) {
-        authService.sendMail(mailAuthRequest);
+        authService.sendMail(mailRequest);
         return handleSuccessResponse(HttpStatus.CREATED);
+    }
+
+    @GetMapping("/mail")
+    public ApiSuccessResponse<?> authenticateCode(
+            MailAuthRequest mailAuthRequest
+    ) {
+        System.out.println("mailAuthRequest = " + mailAuthRequest.getEmail());
+        System.out.println("mailAuthRequest = " + mailAuthRequest.getCode());
+        authService.authenticateCode(mailAuthRequest);
+        return handleSuccessResponse(HttpStatus.OK);
     }
 }

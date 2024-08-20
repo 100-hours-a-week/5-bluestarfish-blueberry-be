@@ -3,6 +3,7 @@ package com.bluestarfish.blueberry.auth.service;
 import com.bluestarfish.blueberry.auth.dto.LoginRequest;
 import com.bluestarfish.blueberry.auth.dto.LoginSuccessResult;
 import com.bluestarfish.blueberry.auth.dto.MailAuthRequest;
+import com.bluestarfish.blueberry.auth.dto.MailRequest;
 import com.bluestarfish.blueberry.auth.entity.AuthCode;
 import com.bluestarfish.blueberry.auth.entity.RefreshToken;
 import com.bluestarfish.blueberry.auth.enumeration.MailAuthType;
@@ -23,6 +24,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Random;
 
 import static java.lang.Boolean.TRUE;
@@ -69,11 +72,11 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void sendMail(MailAuthRequest mailAuthRequest) {
+    public void sendMail(MailRequest mailRequest) {
 
-        String email = mailAuthRequest.getEmail();
+        String email = mailRequest.getEmail();
 
-        if (mailAuthRequest.getType().equals(MailAuthType.JOIN.getType())) {
+        if (mailRequest.getType().equals(MailAuthType.JOIN.getType())) {
             userRepository.findByEmailAndDeletedAtIsNotNull(email)
                     .ifPresent(user -> {
                         throw new AuthException("The email address already exists", HttpStatus.CONFLICT);
@@ -95,6 +98,22 @@ public class AuthServiceImpl implements AuthService {
         }
 
     }
+
+    @Override
+    public void authenticateCode(MailAuthRequest mailAuthRequest) {
+
+        AuthCode authCode = authCodeRepository.findByEmail(mailAuthRequest.getEmail())
+                .orElseThrow(() -> new AuthException("No auth code found for the requested email address", HttpStatus.NOT_FOUND));
+
+        if (Duration.between(authCode.getCreatedAt(), LocalDateTime.now()).toMinutes() > 5) {
+            throw new AuthException("The auth code has expired", HttpStatus.REQUEST_TIMEOUT);
+        }
+
+        if (!mailAuthRequest.getCode().equals(authCode.getCode())) {
+            throw new AuthException("Invalid code", HttpStatus.UNAUTHORIZED);
+        }
+    }
+
 
     private String createCode(String email) throws MessagingException {
         String code = generateRandomCode();
@@ -137,7 +156,6 @@ public class AuthServiceImpl implements AuthService {
                 "</div>" +
                 "<div class=\"footer\">" +
                 "본 메일은 발신 전용입니다.<br />" +
-                "궁금하신 사항은 <a href=\"https://your-site-link.com\">블루베리 사이트 링크</a> 들어오셔서 문의주시면 감사하겠습니다." +
                 "</div>" +
                 "</div>" +
                 "</body>" +
