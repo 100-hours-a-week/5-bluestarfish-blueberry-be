@@ -36,4 +36,10 @@ out/
 ### VS Code ###
 .vscode/
 
+### macOS ###
+.DS_Store
+
 application.yml
+
+### QueryDSL ###
+**/generated

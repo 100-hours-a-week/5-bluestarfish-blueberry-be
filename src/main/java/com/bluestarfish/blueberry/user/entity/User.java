@@ -2,6 +2,7 @@ package com.bluestarfish.blueberry.user.entity;
 
 
 import com.bluestarfish.blueberry.user.enumeration.AuthType;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -25,7 +26,6 @@ import lombok.Setter;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(unique = true, nullable = false)
     private Long id;
 
     @Column(nullable = false, unique = true)
@@ -56,16 +56,20 @@ public class User {
 
     @Builder
     public User(
+            Long id,
             String email,
             String password,
             String nickname,
             String profileImage,
-            AuthType authType
+            AuthType authType,
+            LocalDateTime createdAt
     ) {
+        this.id = id;
         this.email = email;
         this.password = password;
         this.nickname = nickname;
         this.profileImage = profileImage;
         this.authType = authType;
+        this.createdAt = createdAt;
     }
 }
