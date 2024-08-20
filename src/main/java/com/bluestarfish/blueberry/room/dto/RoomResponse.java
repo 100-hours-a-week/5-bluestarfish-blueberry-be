@@ -14,7 +14,7 @@ public class RoomResponse {
     private Long id;
     private String title;
     private int maxUsers;
-    private boolean camEnabled;
+    private boolean isCamEnabled;
     private String password;
     private String thumbnail;
     private String description;
@@ -28,7 +28,7 @@ public class RoomResponse {
                 .id(room.getId())
                 .title(room.getTitle())
                 .maxUsers(room.getMaxUsers())
-                .camEnabled(room.isCamEnabled())
+                .isCamEnabled(room.isCamEnabled())
                 .password(room.getPassword())
                 .thumbnail(room.getThumbnail())
                 .description(room.getDescription())
