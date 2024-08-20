@@ -25,7 +25,11 @@ repositories {
 
 dependencies {
 
+    // Web
     implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    // Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
@@ -40,7 +44,6 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     implementation 'org.webjars:sockjs-client:1.5.1'
     implementation 'org.webjars:stomp-websocket:2.3.3'
-
 
     // jwt
     implementation 'io.jsonwebtoken:jjwt-api:0.12.3'
