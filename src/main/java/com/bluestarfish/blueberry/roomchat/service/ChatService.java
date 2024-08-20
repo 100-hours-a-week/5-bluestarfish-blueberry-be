@@ -1,11 +1,11 @@
 package com.bluestarfish.blueberry.roomchat.service;
 
-import com.bluestarfish.blueberry.roomchat.entity.Chat;
+import com.bluestarfish.blueberry.roomchat.dto.ChatDto;
 import java.util.List;
 
 public interface ChatService {
-    Chat saveChat(Long roomId, Long senderId, String message);
+    ChatDto saveChat(Long roomId, ChatDto chatDto);
 
 
-    List<Chat> listChats(Long roomId);
+    List<ChatDto> listChats(Long roomId);
 }
