@@ -4,7 +4,9 @@ import com.bluestarfish.blueberry.common.entity.UserRoom;
 import com.bluestarfish.blueberry.common.repository.UserRoomRepository;
 import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.roomchat.dto.RoomManagementDto;
+import com.bluestarfish.blueberry.user.dto.UserResponse;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -35,5 +37,12 @@ public class RoomManagementServiceImpl implements RoomManagementService {
         UserRoom updatedUserRoom = userRoomRepository.save(userRoom);
 
         return RoomManagementDto.from(updatedUserRoom);
+    }
+
+    @Override
+    public List<UserResponse> roomMemberList(Long roomId) {
+        return userRoomRepository.findActiveUsersByRoomId(roomId).stream()
+                .map(UserResponse::from)
+                .toList();
     }
 }

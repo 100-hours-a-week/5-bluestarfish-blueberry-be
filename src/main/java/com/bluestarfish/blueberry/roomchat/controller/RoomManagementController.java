@@ -2,6 +2,8 @@ package com.bluestarfish.blueberry.roomchat.controller;
 
 import com.bluestarfish.blueberry.roomchat.dto.RoomManagementDto;
 import com.bluestarfish.blueberry.roomchat.service.RoomManagementService;
+import com.bluestarfish.blueberry.user.dto.UserResponse;
+import java.util.List;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
@@ -24,4 +26,11 @@ public class RoomManagementController {
                                          RoomManagementDto roomManagementDto) {
         return roomManagementService.roomControlUpdate(roomId, roomManagementDto);
     }
+
+    @MessageMapping("/{roomId}/member")
+    @SendTo("/rooms/{roomId}")
+    public List<UserResponse> roomMember(@DestinationVariable("roomId") Long roomId) {
+        return roomManagementService.roomMemberList(roomId);
+    }
+
 }
