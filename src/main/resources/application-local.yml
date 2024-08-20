@@ -1,0 +1,38 @@
+spring:
+  output:
+    ansi:
+      enabled: always
+
+  profiles:
+    active: local
+
+  http:
+    encoding:
+      enabled: true
+      charset: UTF-8
+      force: true
+
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/blueberry
+    username: root
+    password: 1234
+
+  jpa:
+    hibernate:
+      ddl-auto: create
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
+      dialect: org.hibernate.dialect.MySQL8InnoDBDialect
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/blueberry
+
+
+cors:
+  allowed-origins: "http://localhost:3000"
+
+  
