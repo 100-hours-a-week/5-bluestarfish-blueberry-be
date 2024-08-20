@@ -6,7 +6,7 @@ import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import java.time.LocalDateTime;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -18,9 +18,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
-    @Autowired
-    RoomRepository roomRepository;
+
+    private final RoomRepository roomRepository;
 
     @Override
     public void createRoom(RoomRequest roomRequest) {
@@ -35,22 +36,22 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public Page<RoomResponse> getAllRooms(int page, String keyword, String isCamEnabled) {
+    public Page<RoomResponse> getAllRooms(int page, String keyword, Boolean isCamEnabled) {
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
 
         // 이후 QueryDSL or @Query 스타일로 변경 검토
-        if(keyword == null && (isCamEnabled == null || isCamEnabled.equals("all"))) { // 검색 keyword가 없고, 캠 여부가 전체 인 경우 조회
+        if(keyword == null && isCamEnabled == null) { // 검색 keyword가 없고, 캠 여부가 전체 인 경우 조회
             return roomRepository.findByDeletedAtIsNull(pageable).map(RoomResponse::from);
         } else if(keyword == null) { // 검색어가 없고, 캠여부가 true or false 인 경우 조회
-            if(isCamEnabled.equals("true")) {
+            if(isCamEnabled) {
                 return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(true, pageable).map(RoomResponse::from);
             } else {
                 return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(false, pageable).map(RoomResponse::from);
             }
-        } else if(isCamEnabled.equals("all")) { // 검색어가 있고, 캠 여부가 all 인 경우 조회
+        } else if(isCamEnabled == null) { // 검색어가 있고, 캠 여부가 all 인 경우 조회
             return roomRepository.findByTitleContainingAndDeletedAtIsNull(keyword, pageable).map(RoomResponse::from);
         } else { // 검색어가 있고, 캠 여부가 true or false 인 경우 조회
-            if(isCamEnabled.equals("true")) {
+            if(isCamEnabled) {
                 return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, true, pageable).map(RoomResponse::from);
             } else {
                 return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, false, pageable).map(RoomResponse::from);

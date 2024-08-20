@@ -16,7 +16,7 @@ public class RoomRequest {
     private Long id;
     private String title;
     private int maxUsers;
-    private String isCamEnabled;
+    private boolean isCamEnabled;
     private String password;
     private String thumbnail;
     private String description;

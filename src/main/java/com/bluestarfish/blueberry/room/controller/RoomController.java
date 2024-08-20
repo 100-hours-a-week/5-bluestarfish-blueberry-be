@@ -42,8 +42,8 @@ public class RoomController {
     public ApiSuccessResponse<?> getStudyRoomList(
             @RequestParam(name = "page", defaultValue = "0") int page,
             @RequestParam(name = "keyword", required = false) String keyword,
-            @RequestParam(name = "isCamEnabled", required = false) String isCamEnabled
-            ) {
+            @RequestParam(name = "isCamEnabled", required = false) Boolean isCamEnabled
+    ) {
         return handleSuccessResponse(roomService.getAllRooms(page, keyword, isCamEnabled), HttpStatus.OK);
     }
 
