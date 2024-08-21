@@ -21,13 +21,13 @@ public class JWTUtils {
     private static final String TOKEN_KEY = "typ";
     private static final String TOKEN_VALUE = "JWT";
 
-    @Value("${jwt.access-expired}")
+    @Value("${jwt.accessExpired}")
     private Long expiredTime;
 
-    @Value("${jwt.access-expired}")
+    @Value("${jwt.accessExpired}")
     private Long refreshExpiredTime;
 
-    @Value("${jwt.secret-key}")
+    @Value("${jwt.secretKey}")
     private String secret;
 
     private SecretKey secretKey;
