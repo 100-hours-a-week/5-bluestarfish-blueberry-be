@@ -3,13 +3,16 @@ package com.bluestarfish.blueberry.jwt;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.Jwts;
 import jakarta.annotation.PostConstruct;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import javax.crypto.SecretKey;
-import javax.crypto.spec.SecretKeySpec;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+
+@Slf4j
 @Component
 public class JWTUtils {
     private static final String TOKEN_PREFIX = "Bearer ";
@@ -39,7 +42,7 @@ public class JWTUtils {
 
     public Long getId(String token) {
         if (token.startsWith(TOKEN_PREFIX)) {
-            token.replace(TOKEN_PREFIX, EMPTY);
+            token = token.substring(7);
         }
 
         return Jwts
@@ -52,8 +55,9 @@ public class JWTUtils {
     }
 
     public boolean isExpired(String token) {
+        System.out.println(token);
         if (token.startsWith(TOKEN_PREFIX)) {
-            token.replace(TOKEN_PREFIX, EMPTY);
+            token = token.substring(7);
         }
 
         try {
