@@ -43,18 +43,18 @@ jobs:
       - name: Docker build & push to docker repo
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:init .
-          docker push ${{ secrets.DOCKER_REPO }}:init
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:latest .
+          docker push ${{ secrets.DOCKER_REPO }}:latest
 
       - name: Copy docker-compose.yml to EC2 using rsync
         uses: burnett01/rsync-deployments@4.1
         with:
           switches: -avzr --delete
-          remote_path: /home/ubuntu/blueberry-submodule/
+          remote_path: /home/ubuntu/
           remote_host: ${{ secrets.HOST }}
           remote_user: ubuntu
           remote_key: ${{ secrets.KEY }}
-          source: ./blueberry-submodule/docker-compose.yml
+          path: ./blueberry-submodule/docker-compose.yml
 
       - name: Deploy to server
         uses: appleboy/ssh-action@master
