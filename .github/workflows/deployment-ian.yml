@@ -36,6 +36,10 @@ jobs:
       - name: Copy application.yml from submodule
         run: cp ./blueberry-submodule/application-prod.yml ./src/main/resources/application.yml
 
+      - name: List files in resources directory
+        run: ls -al ./src/main/resources
+
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
