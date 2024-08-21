@@ -39,7 +39,7 @@ out/
 ### macOS ###
 .DS_Store
 
-application.yml
+*.yml
 
 ### QueryDSL ###
 **/generated

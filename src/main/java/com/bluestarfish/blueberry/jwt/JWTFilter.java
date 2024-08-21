@@ -64,6 +64,7 @@ public class JWTFilter extends OncePerRequestFilter {
         tempMap.put(RESET_PASSWORD_URL, List.of(HTTP_METHOD_PATCH));
         tempMap.put(FIND_ROOMS_URL, List.of(HTTP_METHOD_GET));
         tempMap.put(FIND_POSTS_URL, List.of(HTTP_METHOD_GET));
+        tempMap.put(OAUTH_REDIRECT_URL, List.of(HTTP_METHOD_GET));
         tempMap.put(OAUTH_PAGE_URL, List.of(HTTP_METHOD_GET));
 
         excludedUrls = tempMap;

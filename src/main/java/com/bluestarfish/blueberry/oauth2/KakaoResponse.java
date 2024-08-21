@@ -10,17 +10,12 @@ public class KakaoResponse {
         this.attribute.put("id", attribute.get("id"));
 
     }
-    
+
     public String getProviderId() {
         return attribute.get("id").toString();
     }
-
-
+    
     public String getEmail() {
         return attribute.get("email").toString();
-    }
-
-    public String getProfileImage() {
-        return ((Map<String, Object>) attribute.get("profile")).get("profile_image_url").toString();
     }
 }
