@@ -50,8 +50,9 @@ jobs:
       #        run: cp ./blueberry-submodule/application-prod.yml ./src/main/resources/application.yml
       - name: valid yml
         run: |
-          cat ./application.yml
-          
+          pwd
+          cat ./src/main/application.yml
+
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
