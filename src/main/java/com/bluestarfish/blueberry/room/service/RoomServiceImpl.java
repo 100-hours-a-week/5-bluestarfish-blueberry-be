@@ -1,11 +1,16 @@
 package com.bluestarfish.blueberry.room.service;
 
+import com.bluestarfish.blueberry.common.dto.UserRoomResponse;
+import com.bluestarfish.blueberry.common.repository.UserRoomRepository;
+import com.bluestarfish.blueberry.room.dto.RoomDetailResponse;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomResponse;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
+    private final UserRoomRepository userRoomRepository;
 
     @Override
     public void createRoom(RoomRequest roomRequest) {
@@ -29,10 +35,13 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public RoomResponse getRoomById(Long id) {
+    public RoomDetailResponse getRoomById(Long id) {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
-        return RoomResponse.from(room);
+        List<UserRoomResponse> userRooms = userRoomRepository.findByRoomIdAndIsActiveTrue(room.getId())
+                .stream().map(userRoom -> UserRoomResponse.from(userRoom, userRoom.getUser()))
+                .collect(Collectors.toList());
+        return RoomDetailResponse.from(room, userRooms);
     }
 
     @Override
