@@ -46,6 +46,13 @@ jobs:
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:latest .
           docker push ${{ secrets.DOCKER_REPO }}:latest
 
+          # 프로젝트 디렉토리 구조 확인 (디버깅)
+      - name: Verify directory structure
+        run: |
+          pwd
+          ls -al
+          ls -al ./blueberry-submodule
+
       - name: Copy docker-compose.yml to EC2 using rsync
         uses: burnett01/rsync-deployments@4.1
         with:
