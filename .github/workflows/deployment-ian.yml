@@ -43,11 +43,15 @@ jobs:
         run: |
           cd ./src/main/resources
           touch ./application.yml
-          echo "${{ secrets.YML }}" > ./application.YML
+          echo "${{ secrets.YML }}" > ./application.yml
         shell: bash
 
       #      - name: Copy application.yml from submodule
       #        run: cp ./blueberry-submodule/application-prod.yml ./src/main/resources/application.yml
+      - name: valid yml
+        run: |
+          pwd
+          cat ./src/main/application.yml
 
       - name: Build with Gradle
         run: |
