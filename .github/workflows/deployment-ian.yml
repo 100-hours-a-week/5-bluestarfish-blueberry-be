@@ -46,6 +46,10 @@ jobs:
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:init .
           docker push ${{ secrets.DOCKER_REPO }}:init
 
+      - name: Copy docker-compose.yml to EC2
+        run: |
+          scp -o StrictHostKeyChecking=no -i ${{ secrets.KEY }} -r ./blueberry-submodule/docker-compose.yml ubuntu@${{ secrets.HOST }}:/home/ubuntu/blueberry-submodule/docker-compose.yml
+
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
