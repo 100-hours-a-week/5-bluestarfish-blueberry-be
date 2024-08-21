@@ -19,11 +19,12 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name="users_rooms")
+@Table(name = "users_rooms")
 public class UserRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -31,38 +32,38 @@ public class UserRoom {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name="user_id", nullable = false)
+    @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @ManyToOne
-    @JoinColumn(name="room_id", nullable = false)
+    @JoinColumn(name = "room_id", nullable = false)
     private Room room;
 
-    @Column(name="is_host", nullable = false)
+    @Column(name = "is_host", nullable = false)
     private boolean isHost;
 
-    @Column(name="is_active", nullable = false)
+    @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
-    @Column(name="cam_enabled", nullable = false)
+    @Column(name = "cam_enabled", nullable = false)
     private boolean camEnabled;
 
-    @Column(name="mic_enabled", nullable = false)
+    @Column(name = "mic_enabled", nullable = false)
     private boolean micEnabled;
 
-    @Column(name="speaker_enabled", nullable = false)
+    @Column(name = "speaker_enabled", nullable = false)
     private boolean speakerEnabled;
 
-    @Column(name="goal_time", nullable = false)
+    @Column(name = "goal_time", nullable = false)
     private Time goalTime;
 
-    @Column(name="day_time", nullable = false)
+    @Column(name = "day_time", nullable = false)
     private Time dayTime;
 
-    @Column(name="created_at", nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name="updated_at", nullable = false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -79,15 +80,15 @@ public class UserRoom {
 
     @Builder
     public UserRoom(
-        User user,
-        Room room,
-        boolean isHost,
-        boolean isActive,
-        boolean camEnabled,
-        boolean micEnabled,
-        boolean speakerEnabled,
-        Time goalTime,
-        Time dayTime
+            User user,
+            Room room,
+            boolean isHost,
+            boolean isActive,
+            boolean camEnabled,
+            boolean micEnabled,
+            boolean speakerEnabled,
+            Time goalTime,
+            Time dayTime
     ) {
         this.user = user;
         this.room = room;
@@ -99,4 +100,6 @@ public class UserRoom {
         this.goalTime = goalTime;
         this.dayTime = dayTime;
     }
+
+
 }

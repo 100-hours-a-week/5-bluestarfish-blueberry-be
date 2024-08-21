@@ -1,8 +1,9 @@
-package com.bluestarfish.blueberry.chat.entity;
+package com.bluestarfish.blueberry.roomchat.entity;
 
 import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.mongodb.core.mapping.Document;
@@ -14,7 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @NoArgsConstructor
 public class Chat {
     @Id
-    private Long id;
+    private String id;
 
     @Field("room_id")
     private Long roomId;
@@ -26,4 +27,12 @@ public class Chat {
 
     @Field("created_at")
     private LocalDateTime createdAt;
+
+    @Builder
+    public Chat(Long roomId, Long senderId, String message) {
+        this.roomId = roomId;
+        this.senderId = senderId;
+        this.message = message;
+        this.createdAt = LocalDateTime.now();
+    }
 }
