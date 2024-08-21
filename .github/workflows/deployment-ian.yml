@@ -64,7 +64,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
-            sudo docker-compose -f docker-compose.yml down --remove-orphans
-            sudo docker-compose -f docker-compose.yml pull
-            sudo docker-compose -f docker-compose.yml up -d
-            sudo docker image prune -f
+            docker-compose -f docker-compose.yml down --remove-orphans
+            docker-compose -f docker-compose.yml pull
+            docker-compose -f docker-compose.yml up -d
+            docker image prune -f
