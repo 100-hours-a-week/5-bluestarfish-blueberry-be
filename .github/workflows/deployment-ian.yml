@@ -29,6 +29,14 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
+      - name: repo checkout
+        with:
+          submodules: true
+          token: ${{ secrets.ACCESS_TOKEN }}
+
+      - name: Copy application.yml from submodule
+        run: cp ./blueberry-submodule/application-prod.yml ./src/main/resources
+
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
@@ -38,7 +46,7 @@ jobs:
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build -x test -Pprofile=prod
+          ./gradlew clean build -x test
 
       - name: Docker build & push to docker repo
         run: |
