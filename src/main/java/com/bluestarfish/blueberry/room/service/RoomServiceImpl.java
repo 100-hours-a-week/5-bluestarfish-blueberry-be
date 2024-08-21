@@ -13,6 +13,7 @@ import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
+import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -36,8 +37,14 @@ public class RoomServiceImpl implements RoomService {
     private final UserRepository userRepository;
 
     @Override
-    public void createRoom(RoomRequest roomRequest) {
-        roomRepository.save(roomRequest.toEntity());
+    public void createRoom(RoomRequest roomRequest, Long userId) {
+        Room room = roomRepository.save(roomRequest.toEntity());
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                .orElseThrow(() -> new RoomException("User not found with id: " + userId, HttpStatus.NOT_FOUND));
+
+        userRoomRepository.save(new UserRoom(
+                user, room, true, false, false, false, false, new Time(0), new Time(0)
+                ));
     }
 
     @Override
