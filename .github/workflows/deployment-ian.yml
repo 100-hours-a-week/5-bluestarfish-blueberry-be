@@ -46,16 +46,6 @@ jobs:
           docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:latest .
           docker push ${{ secrets.DOCKER_REPO }}:latest
 
-      - name: Copy docker-compose.yml to EC2 using rsync
-        uses: burnett01/rsync-deployments@4.1
-        with:
-          switches: -avzr --delete
-          remote_path: /home/ubuntu/
-          remote_host: ${{ secrets.HOST }}
-          remote_user: ubuntu
-          remote_key: ${{ secrets.KEY }}
-          path: ./blueberry-submodule/docker-compose.yml
-
       - name: Deploy to server
         uses: appleboy/ssh-action@master
         with:
@@ -63,8 +53,8 @@ jobs:
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
-            sudo docker-compose -f ./blueberry-submodule/docker-compose.yml down --remove-orphans
-            sudo docker-compose -f ./blueberry-submodule/docker-compose.yml pull
-            sudo docker-compose -f ./blueberry-submodule/docker-compose.yml up -d
+            sudo docker-compose -f ./src/main/resources/docker-compose.yml down --remove-orphans
+            sudo docker-compose -f ./src/main/resources/docker-compose.yml pull
+            sudo docker-compose -f ./src/main/resources/docker-compose.yml up -d
             sudo docker image prune -f
           show-output: true
