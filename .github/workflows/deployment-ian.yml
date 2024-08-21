@@ -51,7 +51,7 @@ jobs:
       - name: valid yml
         run: |
           pwd
-          cat ./src/main/application.yml
+          cat ./application.yml
 
       - name: Build with Gradle
         run: |
