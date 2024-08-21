@@ -27,9 +27,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
-
       - name: repo checkout
+        uses: actions/checkout@v3
         with:
           submodules: true
           token: ${{ secrets.ACCESS_TOKEN }}
