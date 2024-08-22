@@ -48,10 +48,6 @@ jobs:
 
       #      - name: Copy application.yml from submodule
       #        run: cp ./blueberry-submodule/application-prod.yml ./src/main/resources/application.yml
-      - name: valid yml
-        run: |
-          pwd
-          cat ./src/main/resources/application.yml
 
       - name: Build with Gradle
         run: |
