@@ -43,7 +43,6 @@ jobs:
         run: |
           cd ./src/main/resources
           touch ./application.yml
-          echo "${{ secrets.YML }}" > ./application.yml
         shell: bash
 
       #      - name: Copy application.yml from submodule
