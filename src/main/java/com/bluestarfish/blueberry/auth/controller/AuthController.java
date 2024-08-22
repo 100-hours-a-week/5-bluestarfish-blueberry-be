@@ -24,6 +24,8 @@ public class AuthController {
 
     private final AuthService authService;
 
+    // FIXME: 어세스토큰만 쿠키에 담고 userId 요청하는 API 추가
+
     @PostMapping("/login")
     public ApiSuccessResponse<?> login(
             @RequestBody LoginRequest loginRequest,
@@ -37,7 +39,7 @@ public class AuthController {
         accessTokenCookie.setSecure(true);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(60 * 60 * 24);
-
+        
         Cookie userIdCookie = new Cookie("user-id", String.valueOf(loginSuccessResult.getUserId()));
         userIdCookie.setHttpOnly(false);
         userIdCookie.setSecure(true);
