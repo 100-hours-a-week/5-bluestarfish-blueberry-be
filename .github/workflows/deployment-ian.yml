@@ -52,7 +52,8 @@ jobs:
         run: |
           chmod +x ./gradlew
           ./gradlew clean build -x test
-          cd ../../../build/libs
+          pwd
+          cd ./build/libs
           jar xf blueberry-0.0.1-SNAPSHOT.jar BOOT-INF/classes/application.yml
           cat BOOT-INF/classes/application.yml
 
