@@ -43,6 +43,7 @@ jobs:
         run: |
           cd ./src/main/resources
           touch ./application.yml
+          echo "${{ secrets.YML }}" > ./application.yml
         shell: bash
 
       #      - name: Copy application.yml from submodule
@@ -56,7 +57,12 @@ jobs:
           ls
           cd ./build/libs
           ls
+          docker exec -it bluestarfish246/5-bluestarfish-blueberry-be:latest /bin/bash
           jar xf blueberry-0.0.1-SNAPSHOT.jar BOOT-INF/classes/application.yml
+          cat BOOT-INF/classes/application.yml
+          
+          cat application.yml          
+          jar xf blueberry.jar BOOT-INF/classes/application.yml
           cat BOOT-INF/classes/application.yml
 
       - name: Docker build & push to docker repo
