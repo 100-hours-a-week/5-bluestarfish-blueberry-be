@@ -72,18 +72,6 @@ dependencies {
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
-tasks.named('build') {
-    dependsOn 'copyPrivate'
-}
-
-tasks.register('copyPrivate', Copy) {
-    copy {
-        from './blueberry-submodule'
-        include "*.yml"
-        into 'src/main/resources'
-    }
-}
-
 tasks.named('test') {
     useJUnitPlatform()
 }
