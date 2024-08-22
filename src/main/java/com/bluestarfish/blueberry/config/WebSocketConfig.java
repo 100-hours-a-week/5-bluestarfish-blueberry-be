@@ -13,8 +13,11 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${frontend.server.ip}")
     private String frontendServerIp;
 
-    @Value("${ws.connection}")
-    private String wsConnection;
+    @Value("${ws.chatConnection}")
+    private String wsChatConnection;
+
+    @Value("${ws.studyConnection}")
+    private String wsStudyConnection;
 
     @Value("${ws.subscribe}")
     private String subscribe;
@@ -24,10 +27,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) { //websocket 서버에 연결하는 websocket endpoint
-        registry.addEndpoint(wsConnection).setAllowedOrigins(frontendServerIp) //변경하기
+        registry.addEndpoint(wsChatConnection).setAllowedOrigins(frontendServerIp) //변경하기
                 .withSockJS();
 
-        registry.addEndpoint(wsConnection).setAllowedOrigins(frontendServerIp)
+        registry.addEndpoint(wsStudyConnection).setAllowedOrigins(frontendServerIp)
                 .withSockJS();
     }
 
