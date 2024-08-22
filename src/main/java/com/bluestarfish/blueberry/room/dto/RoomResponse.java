@@ -18,12 +18,13 @@ public class RoomResponse {
     private String password;
     private String thumbnail;
     private String description;
+    private int memberNumber;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime deletedAt;
 
-    public static RoomResponse from(Room room) {
+    public static RoomResponse from(Room room, int memberNumber) {
         return RoomResponse.builder()
                 .id(room.getId())
                 .title(room.getTitle())
@@ -32,6 +33,7 @@ public class RoomResponse {
                 .password(room.getPassword())
                 .thumbnail(room.getThumbnail())
                 .description(room.getDescription())
+                .memberNumber(memberNumber)
                 .createdAt(room.getCreatedAt())
                 .deletedAt(room.getDeletedAt())
                 .build();
