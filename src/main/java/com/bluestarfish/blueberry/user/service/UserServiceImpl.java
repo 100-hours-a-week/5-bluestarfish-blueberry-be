@@ -1,5 +1,6 @@
 package com.bluestarfish.blueberry.user.service;
 
+import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
 import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
 import com.bluestarfish.blueberry.user.dto.UserResponse;
@@ -7,6 +8,8 @@ import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -22,6 +25,13 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final JWTUtils jwtUtils;
+
+    @Override
+    public UserResponse getUserByToken(String accessToken) {
+        Long userId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+        return UserResponse.from(userRepository.findById(userId).orElseThrow(() -> new UserException("", HttpStatus.NOT_FOUND)));
+    }
 
     @Override
     public void join(JoinRequest joinRequest) {
