@@ -16,18 +16,17 @@ import java.util.Date;
 @Component
 public class JWTUtils {
     private static final String TOKEN_PREFIX = "Bearer ";
-    private static final String EMPTY = "";
     private static final String USER_ID = "id";
     private static final String TOKEN_KEY = "typ";
     private static final String TOKEN_VALUE = "JWT";
 
-    @Value("${jwt.access-expired}")
+    @Value("${jwt.accessExpired}")
     private Long expiredTime;
 
-    @Value("${jwt.access-expired}")
+    @Value("${jwt.refreshExpired}")
     private Long refreshExpiredTime;
 
-    @Value("${jwt.secret-key}")
+    @Value("${jwt.secretKey}")
     private String secret;
 
     private SecretKey secretKey;
@@ -42,7 +41,7 @@ public class JWTUtils {
 
     public Long getId(String token) {
         if (token.startsWith(TOKEN_PREFIX)) {
-            token = token.substring(7);
+            token = token.substring(TOKEN_PREFIX.length());
         }
 
         return Jwts

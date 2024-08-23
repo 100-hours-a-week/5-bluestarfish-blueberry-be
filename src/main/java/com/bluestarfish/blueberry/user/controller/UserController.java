@@ -9,6 +9,7 @@ import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -25,6 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class UserController {
 
     private final UserService userService;
+
+    @GetMapping("/whoami")
+    public ApiSuccessResponse<?> whoami(
+            @CookieValue(name = "Authorization") String accessToken
+    ) {
+        return handleSuccessResponse(userService.getUserByToken(accessToken), HttpStatus.OK);
+    }
 
     @PostMapping
     public ApiSuccessResponse<?> join(

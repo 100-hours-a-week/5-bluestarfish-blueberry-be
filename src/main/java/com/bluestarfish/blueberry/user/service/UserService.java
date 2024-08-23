@@ -6,6 +6,7 @@ import com.bluestarfish.blueberry.user.dto.UserResponse;
 import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 
 public interface UserService {
+    UserResponse getUserByToken(String accessToken);
     void join(JoinRequest joinRequest);
     UserResponse findById(Long id);
     void update(Long id, UserUpdateRequest userUpdateRequest);
