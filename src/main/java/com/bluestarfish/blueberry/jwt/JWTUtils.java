@@ -41,7 +41,7 @@ public class JWTUtils {
 
     public Long getId(String token) {
         if (token.startsWith(TOKEN_PREFIX)) {
-            token = token.substring(7);
+            token = token.substring(TOKEN_PREFIX.length());
         }
 
         return Jwts
