@@ -13,10 +13,10 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Value("${frontend.server.ip}")
     private String frontendServerIp;
 
-    @Value("${ws.chat-connection}")
+    @Value("${ws.chatConnection}")
     private String wsChatConnection;
 
-    @Value("${ws.study-connection}")
+    @Value("${ws.studyConnection}")
     private String wsStudyConnection;
 
     @Value("${ws.subscribe}")
