@@ -33,28 +33,43 @@ jobs:
         uses: actions/setup-java@v3
         with:
           java-version: '17'
-          distribution: "adopt"
+          distribution: "temurin"
+      #      - name: repo checkout
+      #        uses: actions/checkout@v3
+      #        with:
+      #          submodules: true
+      #          token: ${{ secrets.ACCESS_TOKEN }}
+      - name: Make application.yml
+        run: |
+          cd ./src/main/resources
+          touch ./application.yml
+          echo "${{ secrets.YML }}" > ./application.yml
+        shell: bash
+
+      #      - name: Copy application.yml from submodule
+      #        run: cp ./blueberry-submodule/application-prod.yml ./src/main/resources/application.yml
 
       - name: Build with Gradle
         run: |
           chmod +x ./gradlew
-          ./gradlew clean build -x test -Pprofile=prod
+          ./gradlew clean build -x test
+          pwd
+          ls
+          cd ./build/libs
+          ls
+          docker exec -it bluestarfish246/5-bluestarfish-blueberry-be:latest /bin/bash
+          jar xf blueberry-0.0.1-SNAPSHOT.jar BOOT-INF/classes/application.yml
+          cat BOOT-INF/classes/application.yml
+          
+          cat application.yml          
+          jar xf blueberry.jar BOOT-INF/classes/application.yml
+          cat BOOT-INF/classes/application.yml
 
       - name: Docker build & push to docker repo
         run: |
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:init .
-          docker push ${{ secrets.DOCKER_REPO }}:init
-
-      - name: Copy docker-compose.yml to EC2 using rsync
-        uses: burnett01/rsync-deployments@4.1
-        with:
-          switches: -avzr --delete
-          remote_path: /home/ubuntu/blueberry-submodule/
-          remote_host: ${{ secrets.HOST }}
-          remote_user: ubuntu
-          remote_key: ${{ secrets.KEY }}
-          source: ./blueberry-submodule/docker-compose.yml
+          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:latest .
+          docker push ${{ secrets.DOCKER_REPO }}:latest
 
       - name: Deploy to server
         uses: appleboy/ssh-action@master
@@ -63,8 +78,7 @@ jobs:
           username: ubuntu
           key: ${{ secrets.KEY }}
           script: |
-            sudo docker-compose -f ./blueberry-submodule/docker-compose.yml down --remove-orphans
-            sudo docker-compose -f ./blueberry-submodule/docker-compose.yml pull
-            sudo docker-compose -f ./blueberry-submodule/docker-compose.yml up -d
-            sudo docker image prune -f
-          show-output: true
+            docker-compose -f docker-compose.yml down --remove-orphans
+            docker-compose -f docker-compose.yml pull
+            docker-compose -f docker-compose.yml up -d
+            docker image prune -f
