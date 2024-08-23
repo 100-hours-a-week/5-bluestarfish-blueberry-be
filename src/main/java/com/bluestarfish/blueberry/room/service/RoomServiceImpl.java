@@ -63,20 +63,26 @@ public class RoomServiceImpl implements RoomService {
 
         // 이후 QueryDSL or @Query 스타일로 변경 검토
         if(keyword == null && isCamEnabled == null) { // 검색 keyword가 없고, 캠 여부가 전체 인 경우 조회
-            return roomRepository.findByDeletedAtIsNull(pageable).map(RoomResponse::from);
+            return roomRepository.findByDeletedAtIsNull(pageable)
+                    .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
         } else if(keyword == null) { // 검색어가 없고, 캠여부가 true or false 인 경우 조회
             if(isCamEnabled) {
-                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(true, pageable).map(RoomResponse::from);
+                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(true, pageable)
+                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
             } else {
-                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(false, pageable).map(RoomResponse::from);
+                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(false, pageable)
+                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
             }
         } else if(isCamEnabled == null) { // 검색어가 있고, 캠 여부가 all 인 경우 조회
-            return roomRepository.findByTitleContainingAndDeletedAtIsNull(keyword, pageable).map(RoomResponse::from);
+            return roomRepository.findByTitleContainingAndDeletedAtIsNull(keyword, pageable)
+                    .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
         } else { // 검색어가 있고, 캠 여부가 true or false 인 경우 조회
             if(isCamEnabled) {
-                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, true, pageable).map(RoomResponse::from);
+                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, true, pageable)
+                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
             } else {
-                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, false, pageable).map(RoomResponse::from);
+                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, false, pageable)
+                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
             }
         }
     }

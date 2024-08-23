@@ -5,4 +5,5 @@ import java.util.List;
 
 public interface UserRoomCustomRepository {
     List<User> findActiveUsersByRoomId(Long roomId);
+    int countActiveMembersByRoomId(Long roomId);
 }
