@@ -1,8 +1,8 @@
 package com.bluestarfish.blueberry.roomchat.service;
 
+import com.bluestarfish.blueberry.roomchat.dto.ChatDto;
 import com.bluestarfish.blueberry.roomchat.entity.Chat;
 import com.bluestarfish.blueberry.roomchat.repository.ChatRepository;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,20 +18,23 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public Chat saveChat(Long roomId, Long senderId, String message) {
+    public ChatDto saveChat(Long roomId, ChatDto chatDto) {
         Chat chat = Chat.builder()
                 .roomId(roomId)
-                .senderId(senderId)
-                .message(message)
-                .createdAt(LocalDateTime.now())
+                .senderId(chatDto.getSenderId())
+                .message(chatDto.getMessage())
                 .build();
 
-        return chatRepository.save(chat);
+        Chat savedChat = chatRepository.save(chat);
+        return ChatDto.from(savedChat);
     }
 
     @Override
-    public List<Chat> listChats(Long roomId) {
-        return chatRepository.findAllByRoomId(roomId);
+    public List<ChatDto> listChats(Long roomId) {
+        return chatRepository.findAllByRoomId(roomId).stream()
+                .map(ChatDto::from)
+                .toList();
+
     }
 
 }
