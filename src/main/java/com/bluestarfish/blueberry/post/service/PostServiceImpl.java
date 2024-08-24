@@ -34,9 +34,15 @@ public class PostServiceImpl implements PostService {
     public void createPost(PostRequest postRequest) {
         User user = userRepository.findByIdAndDeletedAtIsNull(postRequest.getUserId())
                 .orElseThrow(() -> new PostException("User not fount with id: " + postRequest.getUserId(), HttpStatus.NOT_FOUND));
-        Room room = roomRepository.findByIdAndDeletedAtIsNull(postRequest.getRoomId())
-                .orElseThrow(() -> new PostException("Room not found with id: " + postRequest.getRoomId(), HttpStatus.NOT_FOUND));
-        Post post = postRequest.toEntity(user, room);
+        Post post;
+
+        if(postRequest.getRoomId() != null) {
+            Room room = roomRepository.findByIdAndDeletedAtIsNull(postRequest.getRoomId())
+                    .orElseThrow(() -> new PostException("Room not found with id: " + postRequest.getRoomId(), HttpStatus.NOT_FOUND));
+            post = postRequest.toEntity(user, room);
+        } else {
+            post = postRequest.toEntity(user);
+        }
         postRepository.save(post);
     }
 

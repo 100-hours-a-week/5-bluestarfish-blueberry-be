@@ -2,7 +2,7 @@ package com.bluestarfish.blueberry.roomchat.controller;
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.common.handler.ResponseHandler;
-import com.bluestarfish.blueberry.roomchat.entity.Chat;
+import com.bluestarfish.blueberry.roomchat.dto.ChatDto;
 import com.bluestarfish.blueberry.roomchat.service.ChatService;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,14 +28,13 @@ public class ChatController {
 
     @MessageMapping("/{roomId}/chats")
     @SendTo("/rooms/{roomId}")
-    public Chat sendMessage(@DestinationVariable("roomId") Long roomId, Chat chatting) {
-        Chat chat = chatService.saveChat(roomId, chatting.getSenderId(), chatting.getMessage());
-        return chat;
+    public ChatDto sendMessage(@DestinationVariable("roomId") Long roomId, ChatDto chatDto) {
+        return chatService.saveChat(roomId, chatDto);
     }
 
     @GetMapping("/rooms/{roomId}/chats")
     public ApiSuccessResponse<?> listChats(@PathVariable("roomId") Long roomId) {
-        List<Chat> chat = chatService.listChats(roomId);
+        List<ChatDto> chat = chatService.listChats(roomId);
         return ResponseHandler.handleSuccessResponse(chat, HttpStatus.OK);
     }
 

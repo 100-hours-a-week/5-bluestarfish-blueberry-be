@@ -29,10 +29,10 @@ public class Chat {
     private LocalDateTime createdAt;
 
     @Builder
-    public Chat(Long roomId, Long senderId, String message, LocalDateTime createdAt) {
+    public Chat(Long roomId, Long senderId, String message) {
         this.roomId = roomId;
         this.senderId = senderId;
         this.message = message;
-        this.createdAt = createdAt;
+        this.createdAt = LocalDateTime.now();
     }
 }
