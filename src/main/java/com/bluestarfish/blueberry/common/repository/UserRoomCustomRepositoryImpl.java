@@ -27,4 +27,17 @@ public class UserRoomCustomRepositoryImpl implements UserRoomCustomRepository {
                         .and(userRoom.isActive.isTrue()))
                 .fetch();
     }
+
+    @Override
+    public int countActiveMembersByRoomId(Long roomId) {
+        QUserRoom userRoom = QUserRoom.userRoom;
+
+        Long count = jpaQueryFactory
+                .select(userRoom.count())
+                .from(userRoom)
+                .where(userRoom.room.id.eq(roomId)
+                        .and(userRoom.isActive.isTrue()))
+                .fetchOne();
+        return (count != null) ? count.intValue() : 0;
+    }
 }

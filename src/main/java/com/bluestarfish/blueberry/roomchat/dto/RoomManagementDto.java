@@ -18,7 +18,7 @@ public class RoomManagementDto {
     private boolean micEnabled;
     private boolean camEnabled;
     private boolean speakerEnabled;
-
+ 
     public static RoomManagementDto from(UserRoom userRoom) {
         return RoomManagementDto.builder()
                 .userId(userRoom.getUser().getId())

@@ -21,7 +21,7 @@ public class PostRequest {
     private Long roomId;
     private String title;
     private String content;
-    private PostType postType;
+    private PostType type;
     private Boolean isRecruited;
 
     public Post toEntity(User user, Room room) {
@@ -30,7 +30,7 @@ public class PostRequest {
                 .room(room)
                 .title(title)
                 .content(content)
-                .postType(postType)
+                .postType(type)
                 .isRecruited(isRecruited)
                 .build();
     }
@@ -40,7 +40,7 @@ public class PostRequest {
                 .user(user)
                 .title(title)
                 .content(content)
-                .postType(postType)
+                .postType(type)
                 .isRecruited(isRecruited)
                 .build();
     }
