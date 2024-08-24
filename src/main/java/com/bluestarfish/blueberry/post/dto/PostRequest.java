@@ -34,4 +34,14 @@ public class PostRequest {
                 .isRecruited(isRecruited)
                 .build();
     }
+
+    public Post toEntity(User user) {
+        return Post.builder()
+                .user(user)
+                .title(title)
+                .content(content)
+                .postType(postType)
+                .isRecruited(isRecruited)
+                .build();
+    }
 }
