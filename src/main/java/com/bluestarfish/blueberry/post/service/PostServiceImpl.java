@@ -74,7 +74,7 @@ public class PostServiceImpl implements PostService {
                 .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
         post.setTitle(postRequest.getTitle());
         post.setContent(postRequest.getContent());
-        post.setPostType(postRequest.getPostType());
+        post.setPostType(postRequest.getType());
         post.setRecruited(postRequest.getIsRecruited());
     }
 
