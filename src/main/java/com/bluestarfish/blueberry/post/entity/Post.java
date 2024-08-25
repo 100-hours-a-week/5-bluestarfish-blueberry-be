@@ -51,6 +51,8 @@ public class Post {
     @Column(name="is_recruited")
     private boolean isRecruited;
 
+    private boolean postCamEnabled;
+
     @Column(name="created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -69,7 +71,8 @@ public class Post {
         String title,
         String content,
         PostType postType,
-        boolean isRecruited
+        boolean isRecruited,
+        boolean postCamEnabled
     ) {
         this.user = user;
         this.room = room;
@@ -77,5 +80,6 @@ public class Post {
         this.content = content;
         this.postType = postType;
         this.isRecruited = isRecruited;
+        this.postCamEnabled = postCamEnabled;
     }
 }
