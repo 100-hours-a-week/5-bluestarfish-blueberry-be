@@ -37,14 +37,24 @@ public class RoomServiceImpl implements RoomService {
     private final UserRepository userRepository;
 
     @Override
-    public void createRoom(RoomRequest roomRequest, Long userId) {
+    public void createRoom(RoomRequest roomRequest) {
         Room room = roomRepository.save(roomRequest.toEntity());
-        User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                .orElseThrow(() -> new RoomException("User not found with id: " + userId, HttpStatus.NOT_FOUND));
+        User user = userRepository.findByIdAndDeletedAtIsNull(roomRequest.getUserId())
+                .orElseThrow(() -> new RoomException("User not found with id: " + roomRequest.getUserId(), HttpStatus.NOT_FOUND));
 
-        userRoomRepository.save(new UserRoom(
-                user, room, true, false, false, false, false, new Time(0), new Time(0)
-                ));
+        UserRoom userRoom = UserRoom.builder()
+                .user(user)
+                .room(room)
+                .isHost(true)
+                .isActive(false)
+                .camEnabled(false)
+                .micEnabled(false)
+                .speakerEnabled(false)
+                .goalTime(new Time(0))
+                .dayTime(new Time(0))
+                .build();
+
+        userRoomRepository.save(userRoom);
     }
 
     @Override
