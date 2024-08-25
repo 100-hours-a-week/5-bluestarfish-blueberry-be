@@ -8,15 +8,16 @@ import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.time.LocalDateTime;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -35,6 +36,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void join(JoinRequest joinRequest) {
+        System.out.println(1111);
+        userRepository.findByEmailAndDeletedAtIsNull(joinRequest.getEmail())
+                .ifPresent(user -> {
+                    throw new UserException("The email address already exists", HttpStatus.CONFLICT);
+                });
+        System.out.println(1111);
         joinRequest.setPassword(passwordEncoder.encode(joinRequest.getPassword()));
         userRepository.save(joinRequest.toEntity());
     }
