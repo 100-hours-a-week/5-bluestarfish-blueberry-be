@@ -42,6 +42,7 @@ public class JWTFilter extends OncePerRequestFilter {
     private static final String LOGOUT_URL = "/api/v1/auth/logout";
     private static final String MAIL_AUTH_URL = "/api/v1/auth/mail";
     private static final String JOIN_URL = "/api/v1/users";
+    private static final String WHOAMI_URL = "/api/v1/users/whoami";
     private static final String VALIDATE_NICKNAME_URL = "/api/v1/users/nickname";
     private static final String RESET_PASSWORD_URL = "/api/v1/users/password";
     private static final String FIND_ROOMS_URL = "/api/v1/rooms";
@@ -66,6 +67,7 @@ public class JWTFilter extends OncePerRequestFilter {
         tempMap.put(FIND_POSTS_URL, List.of(HTTP_METHOD_GET));
         tempMap.put(OAUTH_REDIRECT_URL, List.of(HTTP_METHOD_GET));
         tempMap.put(OAUTH_PAGE_URL, List.of(HTTP_METHOD_GET));
+        tempMap.put(WHOAMI_URL, List.of(HTTP_METHOD_GET));
 
         excludedUrls = tempMap;
     }
@@ -136,13 +138,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 saveRefreshToken(user, jwtTokens.refreshToken());
                 response.addCookie(createCookie(ACCESS_TOKEN_KEY,
                         URLEncoder.encode(jwtTokens.accessToken(), StandardCharsets.UTF_8)));
-
-                Cookie userIdCookie = new Cookie(USER_ID_KEY, String.valueOf(userId));
-                userIdCookie.setHttpOnly(false);
-                userIdCookie.setSecure(true);
-                userIdCookie.setPath("/");
-                userIdCookie.setMaxAge(60 * 60 * 24);
-                response.addCookie(userIdCookie);
             }
 
             filterChain.doFilter(request, response);
