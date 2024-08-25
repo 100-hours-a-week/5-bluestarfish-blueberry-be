@@ -109,11 +109,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 .map(cookie -> URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8))
                 .orElse(null);
 
-        Long userId = Arrays.stream(cookies)
-                .filter(cookie -> USER_ID_KEY.equals(cookie.getName()))
-                .findFirst()
-                .map(cookie -> Long.parseLong(cookie.getValue()))
-                .orElseThrow(() -> new AuthException("Invalid Token", HttpStatus.UNAUTHORIZED));
+        Long userId = jwtUtils.getId(authorization);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException("The user ID contained within the cookie is absent",
