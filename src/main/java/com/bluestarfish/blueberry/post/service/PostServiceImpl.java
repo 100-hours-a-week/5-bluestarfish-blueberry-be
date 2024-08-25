@@ -49,7 +49,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse getPostById(Long id) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new PostException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
         return PostResponse.from(post);
     }
 
