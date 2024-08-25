@@ -17,7 +17,7 @@ public class PostResponse {
     private Long id;
     private String title;
     private String content;
-    private PostType postType;
+    private PostType type;
     private boolean isRecruited;
     private User user;
     private Room room;
@@ -29,7 +29,7 @@ public class PostResponse {
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .postType(post.getPostType())
+                .type(post.getPostType())
                 .isRecruited(post.isRecruited())
                 .user(post.getUser())
                 .room(post.getRoom())

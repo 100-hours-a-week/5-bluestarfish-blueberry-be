@@ -39,15 +39,7 @@ public class AuthController {
         accessTokenCookie.setSecure(true);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(60 * 60 * 24);
-        
-        Cookie userIdCookie = new Cookie("user-id", String.valueOf(loginSuccessResult.getUserId()));
-        userIdCookie.setHttpOnly(false);
-        userIdCookie.setSecure(true);
-        userIdCookie.setPath("/");
-        userIdCookie.setMaxAge(60 * 60 * 24);
-
         response.addCookie(accessTokenCookie);
-        response.addCookie(userIdCookie);
 
         return handleSuccessResponse(HttpStatus.OK);
     }
