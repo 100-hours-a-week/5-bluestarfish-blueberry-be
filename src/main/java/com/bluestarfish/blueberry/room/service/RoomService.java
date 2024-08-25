@@ -7,7 +7,7 @@ import com.bluestarfish.blueberry.room.dto.RoomResponse;
 import org.springframework.data.domain.Page;
 
 public interface RoomService {
-    void createRoom(RoomRequest roomRequest, Long userId);
+    void createRoom(RoomRequest roomRequest);
     RoomDetailResponse getRoomById(Long id);
     Page<RoomResponse> getAllRooms(int page, String keyword, Boolean isCanEnabled);
     void deleteRoomById(Long id);
