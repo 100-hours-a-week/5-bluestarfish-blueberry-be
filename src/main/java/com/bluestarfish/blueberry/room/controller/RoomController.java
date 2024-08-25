@@ -28,10 +28,10 @@ public class RoomController {
     @PostMapping
     public ApiSuccessResponse<?> registerStudyRoom(
             @RequestBody RoomRequest roomRequest,
-            @CookieValue(name = "userId") Long userId
+            @CookieValue(name = "user-id") Long userId
     ) {
-            roomService.createRoom(roomRequest, userId);
-            return handleSuccessResponse(HttpStatus.CREATED);
+        roomService.createRoom(roomRequest, userId);
+        return handleSuccessResponse(HttpStatus.CREATED);
     }
 
     @GetMapping("/{roomId}")
@@ -64,7 +64,7 @@ public class RoomController {
             @PathVariable("userId") Long userId,
             @RequestBody UserRoomRequest userRoomRequest
     ) {
-        if(userRoomRequest.isActive()) { // 입장 or 재입장 요청
+        if (userRoomRequest.isActive()) { // 입장 or 재입장 요청
             roomService.entranceRoom(roomId, userId, userRoomRequest);
         } else { // 퇴장 요청
             roomService.exitRoom(roomId, userId, userRoomRequest);
