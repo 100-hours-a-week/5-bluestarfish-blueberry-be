@@ -44,11 +44,19 @@ public class AuthController {
         return handleSuccessResponse(HttpStatus.OK);
     }
 
+    // FIXME: 인증 쿠키 만료, 리프레쉬 토큰만료
+
     @PostMapping("/logout")
     public ApiSuccessResponse<?> logout(
-            @CookieValue("user-id") Long userId
+            @CookieValue("Authorization") String accessToken,
+            HttpServletResponse response
     ) {
-        authService.logout(userId);
+        Cookie cookie = new Cookie("Authorization", null); // 쿠키의 값을 null로 설정
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        
+        authService.logout(accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
