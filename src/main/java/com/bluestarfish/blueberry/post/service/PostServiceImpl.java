@@ -49,7 +49,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse getPostById(Long id) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new PostException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
         return PostResponse.from(post);
     }
 
@@ -62,9 +62,17 @@ public class PostServiceImpl implements PostService {
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
 
         if(postType == null) {
-            return postRepository.findByIsRecruitedAndDeletedAtIsNull(isRecruited, pageable).map(PostResponse::from);
+            if(isRecruited) {
+                return postRepository.findByIsRecruitedTrueAndDeletedAtIsNull(pageable).map(PostResponse::from);
+            } else {
+                return postRepository.findByDeletedAtIsNull(pageable).map(PostResponse::from);
+            }
         } else {
-            return postRepository.findByPostTypeAndIsRecruitedAndDeletedAtIsNull(postType, isRecruited, pageable).map(PostResponse::from);
+            if(isRecruited) {
+                return postRepository.findByPostTypeAndIsRecruitedTrueAndDeletedAtIsNull(postType, pageable).map(PostResponse::from);
+            } else {
+                return postRepository.findByPostTypeAndDeletedAtIsNull(postType, pageable).map(PostResponse::from);
+            }
         }
     }
 

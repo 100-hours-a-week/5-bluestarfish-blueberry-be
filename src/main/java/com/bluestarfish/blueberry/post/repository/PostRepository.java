@@ -11,6 +11,8 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PostRepository extends JpaRepository<Post, Long> {
     Optional<Post> findByIdAndDeletedAtIsNull(Long postId);
-    Page<Post> findByIsRecruitedAndDeletedAtIsNull(boolean isRecruited, Pageable pageable);
-    Page<Post> findByPostTypeAndIsRecruitedAndDeletedAtIsNull(PostType postType, boolean isRecruited, Pageable pageable);
+    Page<Post> findByIsRecruitedTrueAndDeletedAtIsNull(Pageable pageable);
+    Page<Post> findByDeletedAtIsNull(Pageable pageable);
+    Page<Post> findByPostTypeAndIsRecruitedTrueAndDeletedAtIsNull(PostType postType, Pageable pageable);
+    Page<Post> findByPostTypeAndDeletedAtIsNull(PostType postType, Pageable pageable);
 }
