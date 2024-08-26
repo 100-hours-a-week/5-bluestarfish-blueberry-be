@@ -8,7 +8,7 @@ import com.bluestarfish.blueberry.auth.dto.MailRequest;
 public interface AuthService {
     LoginSuccessResult login(LoginRequest loginRequest);
 
-    void logout(Long userId);
+    void logout(String accessToken);
 
     void sendMail(MailRequest mailRequest);
 
