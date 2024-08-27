@@ -80,10 +80,16 @@ public class PostServiceImpl implements PostService {
     public void updatePostById(Long id, PostRequest postRequest) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
+        if(postRequest.getRoomId() != null) {
+            Room room = roomRepository.findByIdAndDeletedAtIsNull(postRequest.getRoomId())
+                    .orElseThrow(() -> new PostException("room not found with id: " + postRequest.getRoomId(), HttpStatus.NOT_FOUND));
+            post.setRoom(room);
+        }
         post.setTitle(postRequest.getTitle());
         post.setContent(postRequest.getContent());
         post.setPostType(postRequest.getType());
         post.setRecruited(postRequest.getIsRecruited());
+        post.setPostCamEnabled(postRequest.isPostCamEnabled());
     }
 
     @Override
