@@ -27,10 +27,9 @@ public class RoomController {
 
     @PostMapping
     public ApiSuccessResponse<?> registerStudyRoom(
-            @RequestBody RoomRequest roomRequest,
-            @CookieValue(name = "userId") Long userId
+            @RequestBody RoomRequest roomRequest
     ) {
-            roomService.createRoom(roomRequest, userId);
+            roomService.createRoom(roomRequest);
             return handleSuccessResponse(HttpStatus.CREATED);
     }
 

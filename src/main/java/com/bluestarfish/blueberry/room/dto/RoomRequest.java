@@ -14,6 +14,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class RoomRequest {
     private Long id;
+    private Long userId;
     private String title;
     private int maxUsers;
     private boolean isCamEnabled;
