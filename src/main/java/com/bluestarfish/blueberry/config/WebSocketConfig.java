@@ -30,6 +30,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
         registry.addEndpoint(wsChatConnection).setAllowedOrigins(frontendServerIp) //변경하기
                 .withSockJS();
 
+
         registry.addEndpoint(wsStudyConnection).setAllowedOrigins(frontendServerIp)
                 .withSockJS();
     }
