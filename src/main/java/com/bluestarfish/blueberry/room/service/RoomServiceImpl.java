@@ -98,6 +98,12 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public List<RoomResponse> getMyRooms(Long userId) {
+        return roomRepository.findRoomsByUserIdAndIsHost(userId).stream().map(room -> RoomResponse.from(room,
+                userRoomRepository.countActiveMembersByRoomId(room.getId()))).collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteRoomById(Long id) {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
@@ -116,17 +122,17 @@ public class RoomServiceImpl implements RoomService {
                     .orElseThrow(() -> new UserRoomException("User not found this user id: " + userId, HttpStatus.NOT_FOUND));
             Room room = roomRepository.findByIdAndDeletedAtIsNull(roomId)
                     .orElseThrow(() -> new UserRoomException("Room not found this room id: " + roomId, HttpStatus.NOT_FOUND));
-            userRoomRepository.save(new UserRoom(
-                    user,
-                    room,
-                    userRoomRequest.isHost(),
-                    userRoomRequest.isActive(),
-                    userRoomRequest.isCamEnabled(),
-                    userRoomRequest.isMicEnabled(),
-                    userRoomRequest.isSpeakerEnabled(),
-                    userRoomRequest.getGoalTime(),
-                    userRoomRequest.getDayTime()
-            ));
+            userRoomRepository.save(UserRoom.builder()
+                            .user(user)
+                            .room(room)
+                            .isHost(userRoomRequest.isHost())
+                            .isActive(userRoomRequest.isActive())
+                            .camEnabled(userRoomRequest.isCamEnabled())
+                            .micEnabled(userRoomRequest.isMicEnabled())
+                            .speakerEnabled(userRoomRequest.isSpeakerEnabled())
+                            .goalTime(userRoomRequest.getGoalTime())
+                            .dayTime(userRoomRequest.getDayTime())
+                            .build());
         }
     }
 

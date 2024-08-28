@@ -49,6 +49,13 @@ public class RoomController {
         return handleSuccessResponse(roomService.getAllRooms(page, keyword, isCamEnabled), HttpStatus.OK);
     }
 
+    @GetMapping("/my/{userId}")
+    public ApiSuccessResponse<?> getMyRoomList(
+            @PathVariable("userId") Long userId
+    ) {
+        return handleSuccessResponse(roomService.getMyRooms(userId), HttpStatus.OK);
+    }
+
     @DeleteMapping("/{roomId}")
     public ApiSuccessResponse<?> deleteStudyRoom(
             @PathVariable("roomId") Long id

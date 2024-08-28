@@ -19,6 +19,7 @@ public class PostResponse {
     private String content;
     private PostType type;
     private boolean isRecruited;
+    private boolean postCamEnabled;
     private User user;
     private Room room;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -31,6 +32,7 @@ public class PostResponse {
                 .content(post.getContent())
                 .type(post.getPostType())
                 .isRecruited(post.isRecruited())
+                .postCamEnabled(post.isPostCamEnabled())
                 .user(post.getUser())
                 .room(post.getRoom())
                 .build();
