@@ -15,4 +15,5 @@ public interface RoomService {
     void deleteRoomById(Long id);
     void entranceRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest);
     void exitRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest);
+    int getActiveMemberCount(Long roomId);
 }
