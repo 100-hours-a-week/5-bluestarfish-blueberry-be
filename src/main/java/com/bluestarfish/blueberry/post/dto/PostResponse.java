@@ -24,11 +24,7 @@ public class PostResponse {
     private boolean postCamEnabled;
     private UserResponse userResponse;
     private RoomResponse roomResponse;
-//    private Long userId;
-//    private String userEmail;
-//    private String userNickName;
-//    private String userProfileImage;
-//    private Room room;
+
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdAt;
 
