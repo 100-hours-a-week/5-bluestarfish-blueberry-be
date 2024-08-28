@@ -9,8 +9,7 @@ import org.springframework.context.annotation.Configuration;
 public class KurentoConfig {
     @Value("${kurento.url}")
     private String kurentoUrl;
-
-
+    
     @Bean
     public KurentoClient kurentoClient() {
         return KurentoClient.create(kurentoUrl);
