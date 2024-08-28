@@ -42,6 +42,7 @@ public class PostResponse {
                 .postCamEnabled(post.isPostCamEnabled())
                 .userResponse(UserResponse.from(post.getUser()))
                 .roomResponse(RoomResponse.from(post.getRoom(), roomMember))
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 
@@ -54,6 +55,7 @@ public class PostResponse {
                 .isRecruited(post.isRecruited())
                 .postCamEnabled(post.isPostCamEnabled())
                 .userResponse(UserResponse.from(post.getUser()))
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 }
