@@ -21,14 +21,14 @@ public class RoomManagementController {
     }
 
     @MessageMapping("/{roomId}/management")
-    @SendTo("/rooms/{roomId}")
+    @SendTo("/topic/rooms/{roomId}")
     public RoomManagementDto roomControl(@DestinationVariable("roomId") Long roomId,
                                          RoomManagementDto roomManagementDto) {
         return roomManagementService.roomControlUpdate(roomId, roomManagementDto);
     }
 
     @MessageMapping("/{roomId}/member")
-    @SendTo("/rooms/{roomId}")
+    @SendTo("/topic/rooms/{roomId}")
     public List<UserResponse> roomMember(@DestinationVariable("roomId") Long roomId) {
         return roomManagementService.roomMemberList(roomId);
     }

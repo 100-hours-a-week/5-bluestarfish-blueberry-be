@@ -74,27 +74,33 @@ public class RoomServiceImpl implements RoomService {
         // 이후 QueryDSL or @Query 스타일로 변경 검토
         if(keyword == null && isCamEnabled == null) { // 검색 keyword가 없고, 캠 여부가 전체 인 경우 조회
             return roomRepository.findByDeletedAtIsNull(pageable)
-                    .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
+                    .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
         } else if(keyword == null) { // 검색어가 없고, 캠여부가 true or false 인 경우 조회
             if(isCamEnabled) {
                 return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(true, pageable)
-                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
+                        .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
             } else {
                 return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(false, pageable)
-                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
+                        .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
             }
         } else if(isCamEnabled == null) { // 검색어가 있고, 캠 여부가 all 인 경우 조회
             return roomRepository.findByTitleContainingAndDeletedAtIsNull(keyword, pageable)
-                    .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
+                    .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
         } else { // 검색어가 있고, 캠 여부가 true or false 인 경우 조회
             if(isCamEnabled) {
                 return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, true, pageable)
-                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
+                        .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
             } else {
                 return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, false, pageable)
-                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
+                        .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
             }
         }
+    }
+
+    @Override
+    public List<RoomResponse> getMyRooms(Long userId) {
+        return roomRepository.findRoomsByUserIdAndIsHost(userId).stream().map(room -> RoomResponse.from(room,
+                userRoomRepository.countActiveMembersByRoomId(room.getId()))).collect(Collectors.toList());
     }
 
     @Override
@@ -116,17 +122,17 @@ public class RoomServiceImpl implements RoomService {
                     .orElseThrow(() -> new UserRoomException("User not found this user id: " + userId, HttpStatus.NOT_FOUND));
             Room room = roomRepository.findByIdAndDeletedAtIsNull(roomId)
                     .orElseThrow(() -> new UserRoomException("Room not found this room id: " + roomId, HttpStatus.NOT_FOUND));
-            userRoomRepository.save(new UserRoom(
-                    user,
-                    room,
-                    userRoomRequest.isHost(),
-                    userRoomRequest.isActive(),
-                    userRoomRequest.isCamEnabled(),
-                    userRoomRequest.isMicEnabled(),
-                    userRoomRequest.isSpeakerEnabled(),
-                    userRoomRequest.getGoalTime(),
-                    userRoomRequest.getDayTime()
-            ));
+            userRoomRepository.save(UserRoom.builder()
+                            .user(user)
+                            .room(room)
+                            .isHost(userRoomRequest.isHost())
+                            .isActive(userRoomRequest.isActive())
+                            .camEnabled(userRoomRequest.isCamEnabled())
+                            .micEnabled(userRoomRequest.isMicEnabled())
+                            .speakerEnabled(userRoomRequest.isSpeakerEnabled())
+                            .goalTime(userRoomRequest.getGoalTime())
+                            .dayTime(userRoomRequest.getDayTime())
+                            .build());
         }
     }
 
@@ -135,5 +141,10 @@ public class RoomServiceImpl implements RoomService {
         UserRoom userRoom = userRoomRepository.findByRoomIdAndUserId(roomId, userId)
                 .orElseThrow(() -> new UserRoomException("UserRoom not found this user id: " + userId, HttpStatus.NOT_FOUND));
         userRoom.setActive(false);
+    }
+
+    @Override
+    public int getActiveMemberCount(Long roomId) {
+        return userRoomRepository.countActiveMembersByRoomId(roomId);
     }
 }
