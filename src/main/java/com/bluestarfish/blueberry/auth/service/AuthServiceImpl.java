@@ -24,6 +24,8 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Random;
@@ -67,8 +69,9 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public void logout(Long userId) {
-        refreshTokenRepository.deleteByUserId(userId);
+    public void logout(String accessToken) {
+        accessToken = URLDecoder.decode(accessToken, StandardCharsets.UTF_8);
+        refreshTokenRepository.deleteByUserId(jwtUtils.getId(accessToken));
     }
 
     @Override

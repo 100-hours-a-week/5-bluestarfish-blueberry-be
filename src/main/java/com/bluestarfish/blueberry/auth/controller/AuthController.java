@@ -44,11 +44,12 @@ public class AuthController {
         return handleSuccessResponse(HttpStatus.OK);
     }
 
+    // 수정 하고 쿠키받아서 rtc테스트하고 메일 포맷 수정 하고 pr
     @PostMapping("/logout")
     public ApiSuccessResponse<?> logout(
-            @CookieValue("user-id") Long userId
+            @CookieValue("Authorization") String accessToken
     ) {
-        authService.logout(userId);
+        authService.logout(accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
