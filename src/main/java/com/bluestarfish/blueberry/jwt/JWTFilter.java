@@ -85,6 +85,12 @@ public class JWTFilter extends OncePerRequestFilter {
             FilterChain filterChain
     ) throws ServletException, IOException {
 
+        // FIXME: 임시 필터링 제거 이후 삭제
+        if (true) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
         if (excludedUrls.containsKey(requestUri) && excludedUrls.get(requestUri).contains(method)) {
