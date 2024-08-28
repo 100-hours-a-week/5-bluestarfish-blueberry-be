@@ -35,6 +35,7 @@ public class PostResponse {
                 .postCamEnabled(post.isPostCamEnabled())
                 .user(post.getUser())
                 .room(post.getRoom())
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 }
