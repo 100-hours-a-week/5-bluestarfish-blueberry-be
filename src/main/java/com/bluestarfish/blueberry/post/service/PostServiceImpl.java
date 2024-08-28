@@ -6,8 +6,10 @@ import com.bluestarfish.blueberry.post.entity.Post;
 import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.post.exception.PostException;
 import com.bluestarfish.blueberry.post.repository.PostRepository;
+import com.bluestarfish.blueberry.room.dto.RoomResponse;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
+import com.bluestarfish.blueberry.room.service.RoomService;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import java.time.LocalDateTime;
@@ -29,6 +31,7 @@ public class PostServiceImpl implements PostService {
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
+    private final RoomService roomService;
 
     @Override
     public void createPost(PostRequest postRequest) {
@@ -63,15 +66,39 @@ public class PostServiceImpl implements PostService {
 
         if(postType == null) {
             if(isRecruited) {
-                return postRepository.findByIsRecruitedTrueAndDeletedAtIsNull(pageable).map(PostResponse::from);
+                return postRepository.findByIsRecruitedTrueAndDeletedAtIsNull(pageable).map(post -> {
+                    if(post.getRoom() != null) {
+                        return PostResponse.from(post, roomService.getActiveMemberCount(post.getRoom().getId()));
+                    } else {
+                        return PostResponse.from(post);
+                    }
+                });
             } else {
-                return postRepository.findByDeletedAtIsNull(pageable).map(PostResponse::from);
+                return postRepository.findByDeletedAtIsNull(pageable).map(post -> {
+                    if(post.getRoom() != null) {
+                        return PostResponse.from(post, roomService.getActiveMemberCount(post.getRoom().getId()));
+                    } else {
+                        return PostResponse.from(post);
+                    }
+                });
             }
         } else {
             if(isRecruited) {
-                return postRepository.findByPostTypeAndIsRecruitedTrueAndDeletedAtIsNull(postType, pageable).map(PostResponse::from);
+                return postRepository.findByPostTypeAndIsRecruitedTrueAndDeletedAtIsNull(postType, pageable).map(post -> {
+                    if(post.getRoom() != null) {
+                        return PostResponse.from(post, roomService.getActiveMemberCount(post.getRoom().getId()));
+                    } else {
+                        return PostResponse.from(post);
+                    }
+                });
             } else {
-                return postRepository.findByPostTypeAndDeletedAtIsNull(postType, pageable).map(PostResponse::from);
+                return postRepository.findByPostTypeAndDeletedAtIsNull(postType, pageable).map(post -> {
+                    if(post.getRoom() != null) {
+                        return PostResponse.from(post, roomService.getActiveMemberCount(post.getRoom().getId()));
+                    } else {
+                        return PostResponse.from(post);
+                    }
+                });
             }
         }
     }
