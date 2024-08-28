@@ -3,6 +3,7 @@ package com.bluestarfish.blueberry.room.controller;
 import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
+import com.bluestarfish.blueberry.common.dto.UserRoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.service.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -25,10 +26,12 @@ public class RoomController {
 
     @PostMapping
     public ApiSuccessResponse<?> registerStudyRoom(
+
             @RequestBody RoomRequest roomRequest
     ) {
-            roomService.createRoom(roomRequest);
-            return handleSuccessResponse(HttpStatus.CREATED);
+        roomService.createRoom(roomRequest);
+        return handleSuccessResponse(HttpStatus.CREATED);
+
     }
 
     @GetMapping("/{roomId}")
@@ -47,11 +50,32 @@ public class RoomController {
         return handleSuccessResponse(roomService.getAllRooms(page, keyword, isCamEnabled), HttpStatus.OK);
     }
 
+    @GetMapping("/my/{userId}")
+    public ApiSuccessResponse<?> getMyRoomList(
+            @PathVariable("userId") Long userId
+    ) {
+        return handleSuccessResponse(roomService.getMyRooms(userId), HttpStatus.OK);
+    }
+
     @DeleteMapping("/{roomId}")
     public ApiSuccessResponse<?> deleteStudyRoom(
             @PathVariable("roomId") Long id
     ) {
         roomService.deleteRoomById(id);
+        return handleSuccessResponse(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/{roomId}/users/{userId}")
+    public ApiSuccessResponse<?> entranceStudyRoom(
+            @PathVariable("roomId") Long roomId,
+            @PathVariable("userId") Long userId,
+            @RequestBody UserRoomRequest userRoomRequest
+    ) {
+        if (userRoomRequest.isActive()) { // 입장 or 재입장 요청
+            roomService.entranceRoom(roomId, userId, userRoomRequest);
+        } else { // 퇴장 요청
+            roomService.exitRoom(roomId, userId, userRoomRequest);
+        }
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 }

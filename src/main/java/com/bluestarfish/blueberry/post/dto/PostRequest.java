@@ -21,8 +21,9 @@ public class PostRequest {
     private Long roomId;
     private String title;
     private String content;
-    private PostType postType;
+    private PostType type;
     private Boolean isRecruited;
+    private boolean postCamEnabled;
 
     public Post toEntity(User user, Room room) {
         return Post.builder()
@@ -30,8 +31,20 @@ public class PostRequest {
                 .room(room)
                 .title(title)
                 .content(content)
-                .postType(postType)
+                .postType(type)
                 .isRecruited(isRecruited)
+                .postCamEnabled(postCamEnabled)
+                .build();
+    }
+
+    public Post toEntity(User user) {
+        return Post.builder()
+                .user(user)
+                .title(title)
+                .content(content)
+                .postType(type)
+                .isRecruited(isRecruited)
+                .postCamEnabled(postCamEnabled)
                 .build();
     }
 }

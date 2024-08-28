@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class CommentExceptionHandler {
 
-    @ExceptionHandler({PostException.class})
+    @ExceptionHandler({CommentException.class})
     public ApiFailureResponse<?> handleException(HttpServletRequest request, CommentException e) {
         log.error(e.getMessage());
         return handleFailureResponse(e.getMessage(), e.getHttpStatus());

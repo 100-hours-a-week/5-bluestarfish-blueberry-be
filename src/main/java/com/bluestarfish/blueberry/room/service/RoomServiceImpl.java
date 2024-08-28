@@ -1,11 +1,22 @@
 package com.bluestarfish.blueberry.room.service;
 
+import com.bluestarfish.blueberry.common.dto.UserRoomRequest;
+import com.bluestarfish.blueberry.common.dto.UserRoomResponse;
+import com.bluestarfish.blueberry.common.entity.UserRoom;
+import com.bluestarfish.blueberry.common.exception.UserRoomException;
+import com.bluestarfish.blueberry.common.repository.UserRoomRepository;
+import com.bluestarfish.blueberry.room.dto.RoomDetailResponse;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomResponse;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
+import com.bluestarfish.blueberry.user.entity.User;
+import com.bluestarfish.blueberry.user.repository.UserRepository;
+import java.sql.Time;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -22,17 +33,38 @@ import org.springframework.transaction.annotation.Transactional;
 public class RoomServiceImpl implements RoomService {
 
     private final RoomRepository roomRepository;
+    private final UserRoomRepository userRoomRepository;
+    private final UserRepository userRepository;
 
     @Override
     public void createRoom(RoomRequest roomRequest) {
-        roomRepository.save(roomRequest.toEntity());
+        Room room = roomRepository.save(roomRequest.toEntity());
+        User user = userRepository.findByIdAndDeletedAtIsNull(roomRequest.getUserId())
+                .orElseThrow(() -> new RoomException("User not found with id: " + roomRequest.getUserId(), HttpStatus.NOT_FOUND));
+
+        UserRoom userRoom = UserRoom.builder()
+                .user(user)
+                .room(room)
+                .isHost(true)
+                .isActive(false)
+                .camEnabled(false)
+                .micEnabled(false)
+                .speakerEnabled(false)
+                .goalTime(new Time(0))
+                .dayTime(new Time(0))
+                .build();
+
+        userRoomRepository.save(userRoom);
     }
 
     @Override
-    public RoomResponse getRoomById(Long id) {
+    public RoomDetailResponse getRoomById(Long id) {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
-        return RoomResponse.from(room);
+        List<UserRoomResponse> userRooms = userRoomRepository.findByRoomIdAndIsActiveTrue(room.getId())
+                .stream().map(userRoom -> UserRoomResponse.from(userRoom, userRoom.getUser()))
+                .collect(Collectors.toList());
+        return RoomDetailResponse.from(room, userRooms);
     }
 
     @Override
@@ -41,22 +73,34 @@ public class RoomServiceImpl implements RoomService {
 
         // 이후 QueryDSL or @Query 스타일로 변경 검토
         if(keyword == null && isCamEnabled == null) { // 검색 keyword가 없고, 캠 여부가 전체 인 경우 조회
-            return roomRepository.findByDeletedAtIsNull(pageable).map(RoomResponse::from);
+            return roomRepository.findByDeletedAtIsNull(pageable)
+                    .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
         } else if(keyword == null) { // 검색어가 없고, 캠여부가 true or false 인 경우 조회
             if(isCamEnabled) {
-                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(true, pageable).map(RoomResponse::from);
+                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(true, pageable)
+                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
             } else {
-                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(false, pageable).map(RoomResponse::from);
+                return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(false, pageable)
+                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
             }
         } else if(isCamEnabled == null) { // 검색어가 있고, 캠 여부가 all 인 경우 조회
-            return roomRepository.findByTitleContainingAndDeletedAtIsNull(keyword, pageable).map(RoomResponse::from);
+            return roomRepository.findByTitleContainingAndDeletedAtIsNull(keyword, pageable)
+                    .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
         } else { // 검색어가 있고, 캠 여부가 true or false 인 경우 조회
             if(isCamEnabled) {
-                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, true, pageable).map(RoomResponse::from);
+                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, true, pageable)
+                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
             } else {
-                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, false, pageable).map(RoomResponse::from);
+                return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, false, pageable)
+                        .map(room -> RoomResponse.from(room, userRoomRepository.countActiveMembersByRoomId(room.getId())));
             }
         }
+    }
+
+    @Override
+    public List<RoomResponse> getMyRooms(Long userId) {
+        return roomRepository.findRoomsByUserIdAndIsHost(userId).stream().map(room -> RoomResponse.from(room,
+                userRoomRepository.countActiveMembersByRoomId(room.getId()))).collect(Collectors.toList());
     }
 
     @Override
@@ -64,5 +108,38 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
         room.setDeletedAt(LocalDateTime.now());
+    }
+
+    @Override
+    public void entranceRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest) {
+        boolean isExisted = userRoomRepository.findByRoomIdAndUserId(roomId, userId).isPresent();
+        if(isExisted) { // 재입장
+            UserRoom userRoom = userRoomRepository.findByRoomIdAndUserId(roomId, userId)
+                    .orElseThrow(() -> new UserRoomException("UserRoom not found this user id: " + userId, HttpStatus.NOT_FOUND));
+            userRoom.setActive(true);
+        } else { // 첫 입장
+            User user = userRepository.findByIdAndDeletedAtIsNull(userId)
+                    .orElseThrow(() -> new UserRoomException("User not found this user id: " + userId, HttpStatus.NOT_FOUND));
+            Room room = roomRepository.findByIdAndDeletedAtIsNull(roomId)
+                    .orElseThrow(() -> new UserRoomException("Room not found this room id: " + roomId, HttpStatus.NOT_FOUND));
+            userRoomRepository.save(UserRoom.builder()
+                            .user(user)
+                            .room(room)
+                            .isHost(userRoomRequest.isHost())
+                            .isActive(userRoomRequest.isActive())
+                            .camEnabled(userRoomRequest.isCamEnabled())
+                            .micEnabled(userRoomRequest.isMicEnabled())
+                            .speakerEnabled(userRoomRequest.isSpeakerEnabled())
+                            .goalTime(userRoomRequest.getGoalTime())
+                            .dayTime(userRoomRequest.getDayTime())
+                            .build());
+        }
+    }
+
+    @Override
+    public void exitRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest) {
+        UserRoom userRoom = userRoomRepository.findByRoomIdAndUserId(roomId, userId)
+                .orElseThrow(() -> new UserRoomException("UserRoom not found this user id: " + userId, HttpStatus.NOT_FOUND));
+        userRoom.setActive(false);
     }
 }

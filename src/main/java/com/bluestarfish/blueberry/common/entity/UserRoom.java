@@ -100,4 +100,6 @@ public class UserRoom {
         this.goalTime = goalTime;
         this.dayTime = dayTime;
     }
+
+
 }

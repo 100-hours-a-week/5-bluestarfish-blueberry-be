@@ -17,8 +17,9 @@ public class PostResponse {
     private Long id;
     private String title;
     private String content;
-    private PostType postType;
+    private PostType type;
     private boolean isRecruited;
+    private boolean postCamEnabled;
     private User user;
     private Room room;
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -29,10 +30,12 @@ public class PostResponse {
                 .id(post.getId())
                 .title(post.getTitle())
                 .content(post.getContent())
-                .postType(post.getPostType())
+                .type(post.getPostType())
                 .isRecruited(post.isRecruited())
+                .postCamEnabled(post.isPostCamEnabled())
                 .user(post.getUser())
                 .room(post.getRoom())
+                .createdAt(post.getCreatedAt())
                 .build();
     }
 }

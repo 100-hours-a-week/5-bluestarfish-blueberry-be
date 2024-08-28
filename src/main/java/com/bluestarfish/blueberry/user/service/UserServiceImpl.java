@@ -1,5 +1,6 @@
 package com.bluestarfish.blueberry.user.service;
 
+import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
 import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
 import com.bluestarfish.blueberry.user.dto.UserResponse;
@@ -7,13 +8,16 @@ import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
-import java.time.LocalDateTime;
-import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -22,9 +26,22 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final JWTUtils jwtUtils;
+
+    @Override
+    public UserResponse getUserByToken(String accessToken) {
+        Long userId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+        return UserResponse.from(userRepository.findById(userId).orElseThrow(() -> new UserException("", HttpStatus.NOT_FOUND)));
+    }
 
     @Override
     public void join(JoinRequest joinRequest) {
+        System.out.println(1111);
+        userRepository.findByEmailAndDeletedAtIsNull(joinRequest.getEmail())
+                .ifPresent(user -> {
+                    throw new UserException("The email address already exists", HttpStatus.CONFLICT);
+                });
+        System.out.println(1111);
         joinRequest.setPassword(passwordEncoder.encode(joinRequest.getPassword()));
         userRepository.save(joinRequest.toEntity());
     }

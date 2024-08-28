@@ -34,10 +34,14 @@ public class CommentServiceImpl implements CommentService {
                 .orElseThrow(() -> new CommentException("Post not found with id: " + commentRequest.getPostId(), HttpStatus.NOT_FOUND));
         User user = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getUserId())
                 .orElseThrow(() -> new CommentException("User not found with id: " + commentRequest.getUserId(), HttpStatus.NOT_FOUND));
-        User mentionedUser = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getMentionId())
-                .orElseThrow(() -> new CommentException("Mentioned User not found with id: " + commentRequest.getUserId(), HttpStatus.NOT_FOUND));;
-        Comment comment = commentRequest.toEntity(post, user, mentionedUser);
-        commentRepository.save(comment);
+
+        if(commentRequest.getMentionId() != null) {
+            User mentionedUser = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getMentionId())
+                    .orElseThrow(() -> new CommentException("Mentioned User not found with id: " + commentRequest.getUserId(), HttpStatus.NOT_FOUND));
+            commentRepository.save(commentRequest.toEntity(post, user, mentionedUser));
+            return;
+        }
+        commentRepository.save(commentRequest.toEntity(post, user));
     }
 
     @Override
