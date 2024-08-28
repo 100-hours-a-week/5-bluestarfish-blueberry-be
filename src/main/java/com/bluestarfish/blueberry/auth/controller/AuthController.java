@@ -44,11 +44,17 @@ public class AuthController {
         return handleSuccessResponse(HttpStatus.OK);
     }
 
-    // 수정 하고 쿠키받아서 rtc테스트하고 메일 포맷 수정 하고 pr
     @PostMapping("/logout")
     public ApiSuccessResponse<?> logout(
-            @CookieValue("Authorization") String accessToken
+            @CookieValue("Authorization") String accessToken,
+            HttpServletResponse response
     ) {
+        Cookie cookie = new Cookie("Authorization", null); // 쿠키의 값을 null로 설정
+        cookie.setMaxAge(0);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        
+
         authService.logout(accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
