@@ -70,6 +70,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void logout(String accessToken) {
+        accessToken = URLDecoder.decode(accessToken, StandardCharsets.UTF_8);
         refreshTokenRepository.deleteByUserId(jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8)));
     }
 
