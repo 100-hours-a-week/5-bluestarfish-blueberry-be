@@ -53,6 +53,9 @@ public class PostServiceImpl implements PostService {
     public PostResponse getPostById(Long id) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
+        if(post.getRoom() != null) {
+            return PostResponse.from(post, roomService.getActiveMemberCount(post.getRoom().getId()));
+        }
         return PostResponse.from(post);
     }
 
