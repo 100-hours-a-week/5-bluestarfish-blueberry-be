@@ -27,6 +27,7 @@ public class KurentoHandler extends TextWebSocketHandler {
     private final WebRTCRoomManager webRTCRoomManager;
     private final WebRTCUserRegistry registry;
 
+    
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
         JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
