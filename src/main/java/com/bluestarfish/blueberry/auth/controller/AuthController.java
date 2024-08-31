@@ -10,6 +10,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
@@ -24,7 +25,7 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // FIXME: 어세스토큰만 쿠키에 담고 userId 요청하는 API 추가
+    // FIXME: 쿠키 생성로직 수정
 
     @PostMapping("/login")
     public ApiSuccessResponse<?> login(
@@ -34,12 +35,22 @@ public class AuthController {
 
         LoginSuccessResult loginSuccessResult = authService.login(loginRequest);
 
-        Cookie accessTokenCookie = new Cookie("Authorization", URLEncoder.encode(loginSuccessResult.getAccessToken(), "UTF-8"));
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(60 * 60 * 24);
-        response.addCookie(accessTokenCookie);
+//        Cookie accessTokenCookie = new Cookie("Authorization", URLEncoder.encode(loginSuccessResult.getAccessToken(), "UTF-8"));
+//        accessTokenCookie.setHttpOnly(true);
+//        accessTokenCookie.setSecure(true);
+//        accessTokenCookie.setPath("/");
+//        accessTokenCookie.setMaxAge(60 * 60 * 24);
+//        response.addCookie(accessTokenCookie);
+
+        ResponseCookie cookie = ResponseCookie.from("Authorization", URLEncoder.encode(loginSuccessResult.getAccessToken(), "UTF-8"))
+                .maxAge(60 * 60 * 24)
+                .path("/")
+                .httpOnly(true)
+                .secure(true)
+                .sameSite("None") // sameSite 정책을 None 으로 설정
+                .build();
+        response.setHeader("Set-Cookie", cookie.toString());
+
 
         return handleSuccessResponse(HttpStatus.OK);
     }
@@ -53,7 +64,7 @@ public class AuthController {
         cookie.setMaxAge(0);
         cookie.setPath("/");
         response.addCookie(cookie);
-        
+
 
         authService.logout(accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
