@@ -129,28 +129,31 @@ public class UserSession implements Closeable {
 
     // FIXME: close에서 이미 해제한 incoming 리소스 한 번 더 해제해버림
     // 정확히 어디서 두 번 호출하는지 파악
-    public void cancelVideoFrom(final UserSession sender) {
+    public void cancelVideoFrom(UserSession sender) {
         this.cancelVideoFrom(sender.getName());
     }
 
-    public void cancelVideoFrom(final String senderName) {
+    public void cancelVideoFrom(String senderName) {
         log.debug("PARTICIPANT {}: canceling video reception from {}", this.name, senderName);
-        final WebRtcEndpoint incoming = incomingMedia.remove(senderName);
+        WebRtcEndpoint incoming = incomingMedia.remove(senderName);
 
         log.debug("PARTICIPANT {}: removing endpoint for {}", this.name, senderName);
-        incoming.release(new Continuation<Void>() {
-            @Override
-            public void onSuccess(Void result) throws Exception {
-                log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
-                        UserSession.this.name, senderName);
-            }
 
-            @Override
-            public void onError(Throwable cause) throws Exception {
-                log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.name,
-                        senderName);
-            }
-        });
+        if (incoming != null) {
+            incoming.release(new Continuation<Void>() {
+                @Override
+                public void onSuccess(Void result) throws Exception {
+                    log.trace("PARTICIPANT {}: Released successfully incoming EP for {}",
+                            UserSession.this.name, senderName);
+                }
+
+                @Override
+                public void onError(Throwable cause) throws Exception {
+                    log.warn("PARTICIPANT {}: Could not release incoming EP for {}", UserSession.this.name,
+                            senderName);
+                }
+            });
+        }
     }
 
     @Override
@@ -233,4 +236,4 @@ public class UserSession implements Closeable {
         return result;
     }
 }
-
+    

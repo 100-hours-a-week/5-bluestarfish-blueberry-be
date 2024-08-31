@@ -19,17 +19,19 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.bluestarfish.blueberry.webrtc.constant.RTCMessage.*;
+
 @Slf4j
 @Getter
 public class WebRTCRoom implements Closeable {
     private final ConcurrentMap<String, UserSession> participants = new ConcurrentHashMap<>();
     private final MediaPipeline pipeline;
-    private final String name;
+    private final String roomId;
 
-    public WebRTCRoom(String roomName, MediaPipeline pipeline) {
-        this.name = roomName;
+    public WebRTCRoom(String roomId, MediaPipeline pipeline) {
+        this.roomId = roomId;
         this.pipeline = pipeline;
-        log.info("ROOM {} has been created", roomName);
+        log.info("{} 번 방 생성", roomId);
     }
 
     @PreDestroy
@@ -38,72 +40,70 @@ public class WebRTCRoom implements Closeable {
     }
 
     public UserSession join(String userName, WebSocketSession session) throws IOException {
-        log.info("ROOM {}: adding participant {}", this.name, userName);
-        final UserSession participant = new UserSession(userName, this.name, session, this.pipeline);
+        UserSession participant = createNewParticipant(userName, session);
         joinRoom(participant);
         participants.put(participant.getName(), participant);
         sendParticipantNames(participant);
+
+        log.info("'{}'번 방: '{}' 참가", roomId, userName);
         return participant;
     }
 
-    public void leave(UserSession user) throws IOException {
-        log.debug("PARTICIPANT {}: Leaving room {}", user.getName(), this.name);
-        this.removeParticipant(user.getName());
-        user.close();
+    private UserSession createNewParticipant(String userName, WebSocketSession session) {
+        return new UserSession(userName, roomId, session, pipeline);
+    }
+    
+    public void leave(UserSession userSession) throws IOException {
+        log.info("'{}'번 방 '{}' 님 퇴장", roomId, userSession.getName());
+        removeParticipant(userSession.getName());
+        userSession.close();
     }
 
-    private Collection<String> joinRoom(UserSession newParticipant) throws IOException {
-        final JsonObject newParticipantMsg = new JsonObject();
-        newParticipantMsg.addProperty("id", "newParticipantArrived");
-        newParticipantMsg.addProperty("name", newParticipant.getName());
+    private void joinRoom(UserSession newParticipant) {
+        JsonObject newParticipantMessage = createNewParticipantMessage(newParticipant);
 
-        final List<String> participantsList = new ArrayList<>(participants.values().size());
-        log.debug("ROOM {}: notifying other participants of new participant {}", name,
-                newParticipant.getName());
+        participants.values()
+                .forEach(participant -> {
+                    try {
+                        participant.sendMessage(newParticipantMessage);
+                    } catch (IOException e) {
+                        log.debug("'{}'번 방: '{}' 입장 알림 실패", roomId, participant.getName(), e);
+                    }
+                });
+    }
 
-        for (final UserSession participant : participants.values()) {
-            try {
-                participant.sendMessage(newParticipantMsg);
-            } catch (final IOException e) {
-                log.debug("ROOM {}: participant {} could not be notified", name, participant.getName(), e);
-            }
-            participantsList.add(participant.getName());
-        }
+    private JsonObject createNewParticipantMessage(UserSession newParticipant) {
+        JsonObject newParticipantMsg = new JsonObject();
+        newParticipantMsg.addProperty(SOCKET_MESSAGE_ID, NEW_PARTICIPANT_ARRIVED);
+        newParticipantMsg.addProperty(NAME, newParticipant.getName());
 
-        return participantsList;
+        return newParticipantMsg;
     }
 
     private void removeParticipant(String name) {
-        participants.remove(name);
+        participants.remove(name);  // 참조값이 없어지니까 알아서 리소스 해제?
 
-        log.debug("ROOM {}: notifying all users that {} is leaving the room", this.name, name);
+        List<String> unnotifiedParticipants = new ArrayList<>();
+        JsonObject participantLeftJson = new JsonObject();
+        participantLeftJson.addProperty(SOCKET_MESSAGE_ID, PARTICIPANT_LEFT);
+        participantLeftJson.addProperty(NAME, name);
 
-        final List<String> unnotifiedParticipants = new ArrayList<>();
-        final JsonObject participantLeftJson = new JsonObject();
-        participantLeftJson.addProperty("id", "participantLeft");
-        participantLeftJson.addProperty("name", name);
-        for (final UserSession participant : participants.values()) {
+        for (UserSession participant : participants.values()) {
             try {
                 participant.cancelVideoFrom(name);
                 participant.sendMessage(participantLeftJson);
-            } catch (final IOException e) {
+            } catch (IOException e) {
                 unnotifiedParticipants.add(participant.getName());
             }
         }
-
-        if (!unnotifiedParticipants.isEmpty()) {
-            log.debug("ROOM {}: The users {} could not be notified that {} left the room", this.name,
-                    unnotifiedParticipants, name);
-        }
-
     }
 
     public void sendParticipantNames(UserSession user) throws IOException {
 
-        final JsonArray participantsArray = new JsonArray();
-        for (final UserSession participant : this.getParticipants()) {
+        JsonArray participantsArray = new JsonArray();
+        for (UserSession participant : this.getParticipants()) {
             if (!participant.equals(user)) {
-                final JsonElement participantName = new JsonPrimitive(participant.getName());
+                JsonElement participantName = new JsonPrimitive(participant.getName());
                 participantsArray.add(participantName);
             }
         }
@@ -130,7 +130,7 @@ public class WebRTCRoom implements Closeable {
             try {
                 user.close();
             } catch (IOException e) {
-                log.debug("ROOM {}: Could not invoke close on participant {}", this.name, user.getName(),
+                log.debug("ROOM {}: Could not invoke close on participant {}", this.roomId, user.getName(),
                         e);
             }
         }
@@ -141,15 +141,15 @@ public class WebRTCRoom implements Closeable {
 
             @Override
             public void onSuccess(Void result) throws Exception {
-                log.trace("ROOM {}: Released Pipeline", WebRTCRoom.this.name);
+                log.trace("ROOM {}: Released Pipeline", WebRTCRoom.this.roomId);
             }
 
             @Override
             public void onError(Throwable cause) throws Exception {
-                log.warn("PARTICIPANT {}: Could not release Pipeline", WebRTCRoom.this.name);
+                log.warn("PARTICIPANT {}: Could not release Pipeline", WebRTCRoom.this.roomId);
             }
         });
 
-        log.debug("Room {} closed", this.name);
+        log.debug("Room {} closed", this.roomId);
     }
 }

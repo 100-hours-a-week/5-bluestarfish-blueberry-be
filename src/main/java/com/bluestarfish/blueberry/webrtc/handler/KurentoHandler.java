@@ -40,7 +40,7 @@ public class KurentoHandler extends TextWebSocketHandler {
 
         printUserMessage(userSession, jsonMessage);
 
-        switch (jsonMessage.get(SOCKET_MESSAGE_ID).getAsString()) {
+        switch (extractMessageId(jsonMessage)) {
             case JOIN_ROOM:
                 joinRoom(jsonMessage, webSocketSession);
                 break;
@@ -56,6 +56,10 @@ public class KurentoHandler extends TextWebSocketHandler {
             default:
                 break;
         }
+    }
+
+    private String extractMessageId(JsonObject jsonMessage) {
+        return jsonMessage.get(SOCKET_MESSAGE_ID).getAsString();
     }
 
     private void onIceCandidate(
@@ -121,21 +125,32 @@ public class KurentoHandler extends TextWebSocketHandler {
         webRTCRoomManager.getRoom(user.getRoomName()).leave(user);
     }
 
-    private void joinRoom(JsonObject params, WebSocketSession session) throws IOException {
-        final String roomName = params.get(ROOM).getAsString();
-        final String name = params.get(NAME).getAsString();
-        log.info("'{}' 님이 '{}' 방에 참여를 시도 중", name, roomName);
-
-        WebRTCRoom room = webRTCRoomManager.getRoom(roomName);
-        final UserSession user = room.join(name, session);
-        webRTCUserRegistry.register(user);
+    private void joinRoom(JsonObject jsonMessage, WebSocketSession webSocketSession) throws IOException {
+        webRTCUserRegistry.register(
+                tryToJoinRoom(jsonMessage, webSocketSession)
+        );
     }
 
-    private void leaveRoom(UserSession user) throws IOException {
-        WebRTCRoom room = webRTCRoomManager.getRoom(user.getRoomName());
-        room.leave(user);
-        if (room.getParticipants().isEmpty()) {
-            webRTCRoomManager.removeRoom(room);
+    private UserSession tryToJoinRoom(JsonObject jsonMessage, WebSocketSession webSocketSession) throws IOException {
+        return webRTCRoomManager
+                .getRoom(extractRoomId(jsonMessage))
+                .join(extractName(jsonMessage), webSocketSession);
+    }
+
+    private String extractName(JsonObject jsonMessage) {
+        return jsonMessage.get(NAME).getAsString();
+    }
+
+    private String extractRoomId(JsonObject jsonMessage) {
+        return jsonMessage.get(ROOM).getAsString();
+    }
+
+    private void leaveRoom(UserSession userSession) throws IOException {
+        WebRTCRoom webRTCroom = webRTCRoomManager.getRoom(userSession.getRoomName());
+        webRTCroom.leave(userSession);
+        
+        if (webRTCroom.getParticipants().isEmpty()) {
+            webRTCRoomManager.removeRoom(webRTCroom);
         }
     }
 }

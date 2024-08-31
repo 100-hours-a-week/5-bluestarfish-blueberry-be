@@ -13,4 +13,6 @@ public class RTCMessage {
     public static final String SDP_MEDIA_LINE_INDEX = "sdpMLineIndex";
     public static final String NAME = "name";
     public static final String ROOM = "room";
+    public static final String NEW_PARTICIPANT_ARRIVED = "newParticipantArrived";
+    public static final String PARTICIPANT_LEFT = "participantLeft";
 }
