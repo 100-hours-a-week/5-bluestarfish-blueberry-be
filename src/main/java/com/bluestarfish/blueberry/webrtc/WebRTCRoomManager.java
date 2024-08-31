@@ -29,11 +29,6 @@ public class WebRTCRoomManager {
         return room;
     }
 
-    /**
-     * Removes a room from the list of available rooms.
-     *
-     * @param room the room to be removed
-     */
     public void removeRoom(WebRTCRoom room) {
         this.rooms.remove(room.getName());
         room.close();
