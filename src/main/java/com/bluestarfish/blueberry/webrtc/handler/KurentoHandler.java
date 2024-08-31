@@ -120,9 +120,9 @@ public class KurentoHandler extends TextWebSocketHandler {
     }
 
     @Override
-    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        UserSession user = webRTCUserRegistry.removeBySession(session);
-        webRTCRoomManager.getRoom(user.getRoomName()).leave(user);
+    public void afterConnectionClosed(WebSocketSession webSocketSession, CloseStatus closeStatus) throws Exception {
+        UserSession userSession = webRTCUserRegistry.removeBySession(webSocketSession);
+        webRTCRoomManager.getRoom(userSession.getRoomName()).leave(userSession);
     }
 
     private void joinRoom(JsonObject jsonMessage, WebSocketSession webSocketSession) throws IOException {
@@ -148,7 +148,7 @@ public class KurentoHandler extends TextWebSocketHandler {
     private void leaveRoom(UserSession userSession) throws IOException {
         WebRTCRoom webRTCroom = webRTCRoomManager.getRoom(userSession.getRoomName());
         webRTCroom.leave(userSession);
-        
+
         if (webRTCroom.getParticipants().isEmpty()) {
             webRTCRoomManager.removeRoom(webRTCroom);
         }

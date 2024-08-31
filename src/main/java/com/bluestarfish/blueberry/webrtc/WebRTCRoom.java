@@ -1,7 +1,6 @@
 package com.bluestarfish.blueberry.webrtc;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import jakarta.annotation.PreDestroy;
@@ -52,7 +51,7 @@ public class WebRTCRoom implements Closeable {
     private UserSession createNewParticipant(String userName, WebSocketSession session) {
         return new UserSession(userName, roomId, session, pipeline);
     }
-    
+
     public void leave(UserSession userSession) throws IOException {
         log.info("'{}'번 방 '{}' 님 퇴장", roomId, userSession.getName());
         removeParticipant(userSession.getName());
@@ -81,9 +80,9 @@ public class WebRTCRoom implements Closeable {
     }
 
     private void removeParticipant(String name) {
-        participants.remove(name);  // 참조값이 없어지니까 알아서 리소스 해제?
+        participants.remove(name);
 
-        List<String> unnotifiedParticipants = new ArrayList<>();
+        List<String> unNotifiedParticipants = new ArrayList<>();
         JsonObject participantLeftJson = new JsonObject();
         participantLeftJson.addProperty(SOCKET_MESSAGE_ID, PARTICIPANT_LEFT);
         participantLeftJson.addProperty(NAME, name);
@@ -93,26 +92,21 @@ public class WebRTCRoom implements Closeable {
                 participant.cancelVideoFrom(name);
                 participant.sendMessage(participantLeftJson);
             } catch (IOException e) {
-                unnotifiedParticipants.add(participant.getName());
+                unNotifiedParticipants.add(participant.getName());
             }
         }
     }
 
     public void sendParticipantNames(UserSession user) throws IOException {
-
-        JsonArray participantsArray = new JsonArray();
-        for (UserSession participant : this.getParticipants()) {
-            if (!participant.equals(user)) {
-                JsonElement participantName = new JsonPrimitive(participant.getName());
-                participantsArray.add(participantName);
-            }
-        }
-
-        final JsonObject existingParticipantsMsg = new JsonObject();
-        existingParticipantsMsg.addProperty("id", "existingParticipants");
-        existingParticipantsMsg.add("data", participantsArray);
-        log.debug("PARTICIPANT {}: sending a list of {} participants", user.getName(),
-                participantsArray.size());
+        JsonObject existingParticipantsMsg = new JsonObject();
+        existingParticipantsMsg.addProperty(SOCKET_MESSAGE_ID, EXISTING_PATICIPANTS);
+        existingParticipantsMsg.add(
+                DATA,
+                getParticipants().stream()
+                        .filter(participant -> !participant.equals(user))
+                        .map(participant -> new JsonPrimitive(participant.getName()))
+                        .collect(JsonArray::new, JsonArray::add, JsonArray::addAll)
+        );
         user.sendMessage(existingParticipantsMsg);
     }
 
@@ -120,36 +114,32 @@ public class WebRTCRoom implements Closeable {
         return participants.values();
     }
 
-    public UserSession getParticipant(String name) {
-        return participants.get(name);
-    }
-
     @Override
     public void close() {
-        for (final UserSession user : participants.values()) {
-            try {
-                user.close();
-            } catch (IOException e) {
-                log.debug("ROOM {}: Could not invoke close on participant {}", this.roomId, user.getName(),
-                        e);
-            }
-        }
+        participants.values()
+                .forEach(user -> {
+                    try {
+                        user.close();
+                    } catch (IOException e) {
+                        log.debug("'{}'번 방 '{}'님 자원할당 해제 실패", roomId, user.getName(), e);
+                    }
+                });
 
         participants.clear();
 
         pipeline.release(new Continuation<Void>() {
 
             @Override
-            public void onSuccess(Void result) throws Exception {
-                log.trace("ROOM {}: Released Pipeline", WebRTCRoom.this.roomId);
+            public void onSuccess(Void result) {
+                log.info("'{}' 번 방 파이프라인 해제", roomId);
             }
 
             @Override
-            public void onError(Throwable cause) throws Exception {
-                log.warn("PARTICIPANT {}: Could not release Pipeline", WebRTCRoom.this.roomId);
+            public void onError(Throwable cause) {
+                log.warn("'{}'번 방 파이프라인 해제 실패", roomId);
             }
         });
 
-        log.debug("Room {} closed", this.roomId);
+        log.info("'{}'번 방 리소스 클리어", roomId);
     }
 }
