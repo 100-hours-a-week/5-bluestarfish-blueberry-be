@@ -33,6 +33,6 @@ public class WebRtcConfig implements WebSocketConfigurer {
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
         registry.addHandler(kurentoHandler, signalUrl)
-                .setAllowedOriginPatterns("*");
+                .setAllowedOriginPatterns(frontendServerIp);
     }
 }
