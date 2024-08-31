@@ -73,7 +73,7 @@ public class WebRTCRoom implements Closeable {
         return participantsList;
     }
 
-    private void removeParticipant(String name) throws IOException {
+    private void removeParticipant(String name) {
         participants.remove(name);
 
         log.debug("ROOM {}: notifying all users that {} is leaving the room", this.name, name);

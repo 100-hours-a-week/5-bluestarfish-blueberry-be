@@ -14,18 +14,20 @@ import java.util.concurrent.ConcurrentMap;
 
 @Slf4j
 public class UserSession implements Closeable {
-    
+
     private final String name;
     private final WebSocketSession session;
-
     private final MediaPipeline pipeline;
-
     private final String roomName;
     private final WebRtcEndpoint outgoingMedia;
     private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
 
-    public UserSession(final String name, String roomName, final WebSocketSession session,
-                       MediaPipeline pipeline) {
+    public UserSession(
+            final String name,
+            String roomName,
+            final WebSocketSession session,
+            MediaPipeline pipeline
+    ) {
 
         this.pipeline = pipeline;
         this.name = name;
@@ -125,6 +127,8 @@ public class UserSession implements Closeable {
         return incoming;
     }
 
+    // FIXME: close에서 이미 해제한 incoming 리소스 한 번 더 해제해버림
+    // 정확히 어디서 두 번 호출하는지 파악
     public void cancelVideoFrom(final UserSession sender) {
         this.cancelVideoFrom(sender.getName());
     }
@@ -206,11 +210,6 @@ public class UserSession implements Closeable {
         }
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#equals(java.lang.Object)
-     */
     @Override
     public boolean equals(Object obj) {
 
@@ -226,11 +225,6 @@ public class UserSession implements Closeable {
         return eq;
     }
 
-    /*
-     * (non-Javadoc)
-     *
-     * @see java.lang.Object#hashCode()
-     */
     @Override
     public int hashCode() {
         int result = 1;
