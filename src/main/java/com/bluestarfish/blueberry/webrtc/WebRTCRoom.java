@@ -114,6 +114,46 @@ public class WebRTCRoom implements Closeable {
         return participants.values();
     }
 
+    public void sendCamControl(
+            JsonObject jsonMessage,
+            UserSession userSession
+    ) {
+        JsonObject message = new JsonObject();
+        message.addProperty(SOCKET_MESSAGE_ID, IS_CAM_ON);
+        message.addProperty(SENDER, userSession.getName());
+        message.addProperty(IS_CAM_ON, jsonMessage.get(IS_CAM_ON).getAsBoolean());
+
+        participants.values().stream()
+                .filter(participant -> !participant.getName().equals(userSession.getName())) // 본인의 이름을 제외
+                .forEach(participant -> {
+                    try {
+                        participant.sendMessage(message);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    public void sendMicControl(
+            JsonObject jsonMessage,
+            UserSession userSession
+    ) {
+        JsonObject message = new JsonObject();
+        message.addProperty(SOCKET_MESSAGE_ID, IS_MIC_ON);
+        message.addProperty(SENDER, userSession.getName());
+        message.addProperty(IS_MIC_ON, jsonMessage.get(IS_MIC_ON).getAsBoolean());
+
+        participants.values().stream()
+                .filter(participant -> !participant.getName().equals(userSession.getName())) // 본인의 이름을 제외
+                .forEach(participant -> {
+                    try {
+                        participant.sendMessage(message);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
     @Override
     public void close() {
         participants.values()

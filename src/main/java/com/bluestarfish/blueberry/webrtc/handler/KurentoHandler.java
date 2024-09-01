@@ -53,9 +53,35 @@ public class KurentoHandler extends TextWebSocketHandler {
             case ON_ICE_CANDIDATE:
                 onIceCandidate(jsonMessage, userSession);
                 break;
+            case IS_CAM_ON:
+                isCamOn(jsonMessage, userSession);
+                break;
+            case IS_MIC_ON:
+                isMicOn(jsonMessage, userSession);
+                break;
             default:
                 break;
         }
+    }
+
+    private void isCamOn(
+            JsonObject jsonMessage,
+            UserSession userSession
+    ) throws IOException {
+        WebRTCRoom webRTCRoom = webRTCRoomManager.getRoom(
+                userSession.getRoomName()
+        );
+        webRTCRoom.sendCamControl(jsonMessage, userSession);
+    }
+
+    private void isMicOn(
+            JsonObject jsonMessage,
+            UserSession userSession
+    ) throws IOException {
+        WebRTCRoom webRTCRoom = webRTCRoomManager.getRoom(
+                userSession.getRoomName()
+        );
+        webRTCRoom.sendMicControl(jsonMessage, userSession);
     }
 
     private String extractMessageId(JsonObject jsonMessage) {
@@ -93,6 +119,8 @@ public class KurentoHandler extends TextWebSocketHandler {
                 findUserSession(jsonMessage),
                 extractSdpOffer(jsonMessage)
         );
+
+
     }
 
     private String extractSdpOffer(JsonObject jsonMessage) {

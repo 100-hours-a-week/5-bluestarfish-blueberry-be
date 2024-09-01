@@ -5,6 +5,8 @@ public class RTCMessage {
     public static final String RECEIVE_VIDEO_FROM = "receiveVideoFrom";
     public static final String LEAVE_ROOM = "leaveRoom";
     public static final String ON_ICE_CANDIDATE = "onIceCandidate";
+    public static final String IS_CAM_ON = "isCamOn";
+    public static final String IS_MIC_ON = "isMicOn";
     public static final String SOCKET_MESSAGE_ID = "id";
     public static final String SENDER = "sender";
     public static final String SDP_OFFER = "sdpOffer";
