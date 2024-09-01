@@ -9,4 +9,6 @@ import java.util.Optional;
 @Repository
 public interface AuthCodeRepository extends JpaRepository<AuthCode, Long> {
     Optional<AuthCode> findByEmail(String email);
+
+    void deleteByEmail(String email);
 }
