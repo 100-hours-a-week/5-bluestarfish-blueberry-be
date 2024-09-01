@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
 import org.springframework.stereotype.Component;
 
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -15,29 +16,21 @@ public class WebRTCRoomManager {
     private final ConcurrentMap<String, WebRTCRoom> rooms = new ConcurrentHashMap<>();
     private final KurentoClient kurento;
 
-    public WebRTCRoom getRoom(String roomName) {
-        log.debug("Searching for room {}", roomName);
-        WebRTCRoom room = rooms.get(roomName);
+    public WebRTCRoom getRoom(String roomId) {
+        return Optional.ofNullable(rooms.get(roomId))
+                .orElseGet(() -> {
+                    log.info("'{}'번 방이 존재하지 않습니다. 새로운 방을 생성합니다.", roomId);
+                    WebRTCRoom newRoom = new WebRTCRoom(roomId, kurento.createMediaPipeline());
+                    rooms.put(roomId, newRoom);
 
-        if (room == null) {
-            log.debug("Room {} not existent. Will create now!", roomName);
-            room = new WebRTCRoom(roomName, kurento.createMediaPipeline());
-            rooms.put(roomName, room);
-        }
-        log.debug("Room {} found!", roomName);
-
-        return room;
+                    return newRoom;
+                });
     }
 
-    /**
-     * Removes a room from the list of available rooms.
-     *
-     * @param room the room to be removed
-     */
-    public void removeRoom(WebRTCRoom room) {
-        this.rooms.remove(room.getName());
-        room.close();
-        log.info("Room {} removed and closed", room.getName());
+    public void removeRoom(WebRTCRoom webRTCRoom) {
+        rooms.remove(webRTCRoom.getRoomId());
+        webRTCRoom.close();
+        log.info(" '{}'번 방 삭제", webRTCRoom.getRoomId());
     }
 
 }

@@ -27,6 +27,7 @@ public class CommentResponse {
                 .user(comment.getUser())
                 .mentionedUser(comment.getMetionedUser())
                 .content(comment.getContent())
+                .createdAt(comment.getCreatedAt())
                 .build();
     }
 }

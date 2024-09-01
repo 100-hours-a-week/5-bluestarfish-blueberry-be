@@ -11,27 +11,23 @@ public class WebRTCUserRegistry {
     private final ConcurrentHashMap<String, UserSession> usersByName = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, UserSession> usersBySessionId = new ConcurrentHashMap<>();
 
-    public void register(UserSession user) {
-        usersByName.put(user.getName(), user);
-        usersBySessionId.put(user.getSession().getId(), user);
+    public void register(UserSession userSession) {
+        usersByName.put(userSession.getName(), userSession);
+        usersBySessionId.put(userSession.getSession().getId(), userSession);
     }
 
     public UserSession getByName(String name) {
         return usersByName.get(name);
     }
 
-    public UserSession getBySession(WebSocketSession session) {
-        return usersBySessionId.get(session.getId());
+    public UserSession getBySession(WebSocketSession webSocketSession) {
+        return usersBySessionId.get(webSocketSession.getId());
     }
 
-    public boolean exists(String name) {
-        return usersByName.keySet().contains(name);
-    }
-
-    public UserSession removeBySession(WebSocketSession session) {
-        final UserSession user = getBySession(session);
+    public UserSession removeBySession(WebSocketSession webSocketSession) {
+        UserSession user = getBySession(webSocketSession);
         usersByName.remove(user.getName());
-        usersBySessionId.remove(session.getId());
+        usersBySessionId.remove(webSocketSession.getId());
         return user;
     }
 
