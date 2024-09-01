@@ -1,5 +1,6 @@
 package com.bluestarfish.blueberry.webrtc;
 
+import com.bluestarfish.blueberry.webrtc.enumeration.WebRTCMessageType;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
@@ -22,10 +23,15 @@ public class KurentoHandler extends TextWebSocketHandler {
     private static final String RECEIVE_VIDEO_FROM_MESSAGE = "receiveVideoFrom";
     private static final String LEAVE_ROOM_MESSAGE = "leaveRoom";
     private static final String ON_ICE_CANDIDATE_MESSAGE = "onIceCandidate";
+    private static final String SOCKET_MESSAGE_ID = "id";
+    private static final String SENDER = "sender";
+    private static final String SDP_OFFER = "sdpOffer";
+    private static final String CANDIDATE = "candidate";
 
     private static final Gson gson = new GsonBuilder().create();
-    private final WebRTCRoomManager webRTCRoomManager;
     private final WebRTCUserRegistry registry;
+    private final WebRTCRoomManager webRTCRoomManager;
+    
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -37,25 +43,25 @@ public class KurentoHandler extends TextWebSocketHandler {
         } else {
             log.debug("Incoming message from new user: {}", jsonMessage);
         }
-
-        switch (jsonMessage.get("id").getAsString()) {
+        WebRTCMessageType.JOIN_ROOM.getType();
+        switch (jsonMessage.get(SOCKET_MESSAGE_ID).getAsString()) {
             case JOIN_ROOM_MESSAGE:
                 joinRoom(jsonMessage, session);
                 break;
             case RECEIVE_VIDEO_FROM_MESSAGE:
-                final String senderName = jsonMessage.get("sender").getAsString();
+                final String senderName = jsonMessage.get(SENDER).getAsString();
                 final UserSession sender = registry.getByName(senderName);
-                final String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
+                final String sdpOffer = jsonMessage.get(SDP_OFFER).getAsString();
                 user.receiveVideoFrom(sender, sdpOffer);
                 break;
             case LEAVE_ROOM_MESSAGE:
                 leaveRoom(user);
                 break;
             case ON_ICE_CANDIDATE_MESSAGE:
-                JsonObject candidate = jsonMessage.get("candidate").getAsJsonObject();
+                JsonObject candidate = jsonMessage.get(CANDIDATE).getAsJsonObject();
 
                 if (user != null) {
-                    IceCandidate cand = new IceCandidate(candidate.get("candidate").getAsString(),
+                    IceCandidate cand = new IceCandidate(candidate.get(CANDIDATE).getAsString(),
                             candidate.get("sdpMid").getAsString(), candidate.get("sdpMLineIndex").getAsInt());
                     user.addCandidate(cand, jsonMessage.get("name").getAsString());
                 }
