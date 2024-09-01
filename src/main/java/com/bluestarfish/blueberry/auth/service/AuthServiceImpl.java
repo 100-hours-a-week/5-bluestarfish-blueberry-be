@@ -87,6 +87,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
+            authCodeRepository.deleteByEmail(email);
             authCodeRepository.save(
                     AuthCode.builder()
                             .email(email)
@@ -115,6 +116,8 @@ public class AuthServiceImpl implements AuthService {
         if (!mailAuthRequest.getCode().equals(authCode.getCode())) {
             throw new AuthException("Invalid code", HttpStatus.UNAUTHORIZED);
         }
+
+        authCodeRepository.deleteByEmail(mailAuthRequest.getEmail());
     }
 
 

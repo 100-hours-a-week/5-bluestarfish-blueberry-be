@@ -32,5 +32,4 @@ public class WebRTCRoomManager {
         webRTCRoom.close();
         log.info(" '{}'번 방 삭제", webRTCRoom.getRoomId());
     }
-
 }
