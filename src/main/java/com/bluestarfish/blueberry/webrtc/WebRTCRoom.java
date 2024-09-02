@@ -1,7 +1,6 @@
 package com.bluestarfish.blueberry.webrtc;
 
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import jakarta.annotation.PreDestroy;
@@ -19,17 +18,19 @@ import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static com.bluestarfish.blueberry.webrtc.constant.RTCMessage.*;
+
 @Slf4j
 @Getter
 public class WebRTCRoom implements Closeable {
     private final ConcurrentMap<String, UserSession> participants = new ConcurrentHashMap<>();
     private final MediaPipeline pipeline;
-    private final String name;
+    private final String roomId;
 
-    public WebRTCRoom(String roomName, MediaPipeline pipeline) {
-        this.name = roomName;
+    public WebRTCRoom(String roomId, MediaPipeline pipeline) {
+        this.roomId = roomId;
         this.pipeline = pipeline;
-        log.info("ROOM {} has been created", roomName);
+        log.info("{} 번 방 생성", roomId);
     }
 
     @PreDestroy
@@ -38,81 +39,74 @@ public class WebRTCRoom implements Closeable {
     }
 
     public UserSession join(String userName, WebSocketSession session) throws IOException {
-        log.info("ROOM {}: adding participant {}", this.name, userName);
-        final UserSession participant = new UserSession(userName, this.name, session, this.pipeline);
+        UserSession participant = createNewParticipant(userName, session);
         joinRoom(participant);
         participants.put(participant.getName(), participant);
         sendParticipantNames(participant);
+
+        log.info("'{}'번 방: '{}' 참가", roomId, userName);
         return participant;
     }
 
-    public void leave(UserSession user) throws IOException {
-        log.debug("PARTICIPANT {}: Leaving room {}", user.getName(), this.name);
-        this.removeParticipant(user.getName());
-        user.close();
+    private UserSession createNewParticipant(String userName, WebSocketSession session) {
+        return new UserSession(userName, roomId, session, pipeline);
     }
 
-    private Collection<String> joinRoom(UserSession newParticipant) throws IOException {
-        final JsonObject newParticipantMsg = new JsonObject();
-        newParticipantMsg.addProperty("id", "newParticipantArrived");
-        newParticipantMsg.addProperty("name", newParticipant.getName());
-
-        final List<String> participantsList = new ArrayList<>(participants.values().size());
-        log.debug("ROOM {}: notifying other participants of new participant {}", name,
-                newParticipant.getName());
-
-        for (final UserSession participant : participants.values()) {
-            try {
-                participant.sendMessage(newParticipantMsg);
-            } catch (final IOException e) {
-                log.debug("ROOM {}: participant {} could not be notified", name, participant.getName(), e);
-            }
-            participantsList.add(participant.getName());
-        }
-
-        return participantsList;
+    public void leave(UserSession userSession) throws IOException {
+        log.info("'{}'번 방 '{}' 님 퇴장", roomId, userSession.getName());
+        removeParticipant(userSession.getName());
+        userSession.close();
     }
 
-    private void removeParticipant(String name) throws IOException {
+    private void joinRoom(UserSession newParticipant) {
+        JsonObject newParticipantMessage = createNewParticipantMessage(newParticipant);
+
+        participants.values()
+                .forEach(participant -> {
+                    try {
+                        participant.sendMessage(newParticipantMessage);
+                    } catch (IOException e) {
+                        log.debug("'{}'번 방: '{}' 입장 알림 실패", roomId, participant.getName(), e);
+                    }
+                });
+    }
+
+    private JsonObject createNewParticipantMessage(UserSession newParticipant) {
+        JsonObject newParticipantMsg = new JsonObject();
+        newParticipantMsg.addProperty(SOCKET_MESSAGE_ID, NEW_PARTICIPANT_ARRIVED);
+        newParticipantMsg.addProperty(NAME, newParticipant.getName());
+
+        return newParticipantMsg;
+    }
+
+    private void removeParticipant(String name) {
         participants.remove(name);
 
-        log.debug("ROOM {}: notifying all users that {} is leaving the room", this.name, name);
+        List<String> unNotifiedParticipants = new ArrayList<>();
+        JsonObject participantLeftJson = new JsonObject();
+        participantLeftJson.addProperty(SOCKET_MESSAGE_ID, PARTICIPANT_LEFT);
+        participantLeftJson.addProperty(NAME, name);
 
-        final List<String> unnotifiedParticipants = new ArrayList<>();
-        final JsonObject participantLeftJson = new JsonObject();
-        participantLeftJson.addProperty("id", "participantLeft");
-        participantLeftJson.addProperty("name", name);
-        for (final UserSession participant : participants.values()) {
+        for (UserSession participant : participants.values()) {
             try {
                 participant.cancelVideoFrom(name);
                 participant.sendMessage(participantLeftJson);
-            } catch (final IOException e) {
-                unnotifiedParticipants.add(participant.getName());
+            } catch (IOException e) {
+                unNotifiedParticipants.add(participant.getName());
             }
         }
-
-        if (!unnotifiedParticipants.isEmpty()) {
-            log.debug("ROOM {}: The users {} could not be notified that {} left the room", this.name,
-                    unnotifiedParticipants, name);
-        }
-
     }
 
     public void sendParticipantNames(UserSession user) throws IOException {
-
-        final JsonArray participantsArray = new JsonArray();
-        for (final UserSession participant : this.getParticipants()) {
-            if (!participant.equals(user)) {
-                final JsonElement participantName = new JsonPrimitive(participant.getName());
-                participantsArray.add(participantName);
-            }
-        }
-
-        final JsonObject existingParticipantsMsg = new JsonObject();
-        existingParticipantsMsg.addProperty("id", "existingParticipants");
-        existingParticipantsMsg.add("data", participantsArray);
-        log.debug("PARTICIPANT {}: sending a list of {} participants", user.getName(),
-                participantsArray.size());
+        JsonObject existingParticipantsMsg = new JsonObject();
+        existingParticipantsMsg.addProperty(SOCKET_MESSAGE_ID, EXISTING_PATICIPANTS);
+        existingParticipantsMsg.add(
+                DATA,
+                getParticipants().stream()
+                        .filter(participant -> !participant.equals(user))
+                        .map(participant -> new JsonPrimitive(participant.getName()))
+                        .collect(JsonArray::new, JsonArray::add, JsonArray::addAll)
+        );
         user.sendMessage(existingParticipantsMsg);
     }
 
@@ -120,36 +114,72 @@ public class WebRTCRoom implements Closeable {
         return participants.values();
     }
 
-    public UserSession getParticipant(String name) {
-        return participants.get(name);
+    public void sendCamControl(
+            JsonObject jsonMessage,
+            UserSession userSession
+    ) {
+        JsonObject message = new JsonObject();
+        message.addProperty(SOCKET_MESSAGE_ID, IS_CAM_ON);
+        message.addProperty(SENDER, userSession.getName());
+        message.addProperty(IS_CAM_ON, jsonMessage.get(IS_CAM_ON).getAsBoolean());
+
+        participants.values().stream()
+                .filter(participant -> !participant.getName().equals(userSession.getName())) // 본인의 이름을 제외
+                .forEach(participant -> {
+                    try {
+                        participant.sendMessage(message);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+    }
+
+    public void sendMicControl(
+            JsonObject jsonMessage,
+            UserSession userSession
+    ) {
+        JsonObject message = new JsonObject();
+        message.addProperty(SOCKET_MESSAGE_ID, IS_MIC_ON);
+        message.addProperty(SENDER, userSession.getName());
+        message.addProperty(IS_MIC_ON, jsonMessage.get(IS_MIC_ON).getAsBoolean());
+
+        participants.values().stream()
+                .filter(participant -> !participant.getName().equals(userSession.getName())) // 본인의 이름을 제외
+                .forEach(participant -> {
+                    try {
+                        participant.sendMessage(message);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
     }
 
     @Override
     public void close() {
-        for (final UserSession user : participants.values()) {
-            try {
-                user.close();
-            } catch (IOException e) {
-                log.debug("ROOM {}: Could not invoke close on participant {}", this.name, user.getName(),
-                        e);
-            }
-        }
+        participants.values()
+                .forEach(user -> {
+                    try {
+                        user.close();
+                    } catch (IOException e) {
+                        log.debug("'{}'번 방 '{}'님 자원할당 해제 실패", roomId, user.getName(), e);
+                    }
+                });
 
         participants.clear();
 
         pipeline.release(new Continuation<Void>() {
 
             @Override
-            public void onSuccess(Void result) throws Exception {
-                log.trace("ROOM {}: Released Pipeline", WebRTCRoom.this.name);
+            public void onSuccess(Void result) {
+                log.info("'{}' 번 방 파이프라인 해제", roomId);
             }
 
             @Override
-            public void onError(Throwable cause) throws Exception {
-                log.warn("PARTICIPANT {}: Could not release Pipeline", WebRTCRoom.this.name);
+            public void onError(Throwable cause) {
+                log.warn("'{}'번 방 파이프라인 해제 실패", roomId);
             }
         });
 
-        log.debug("Room {} closed", this.name);
+        log.info("'{}'번 방 리소스 클리어", roomId);
     }
 }

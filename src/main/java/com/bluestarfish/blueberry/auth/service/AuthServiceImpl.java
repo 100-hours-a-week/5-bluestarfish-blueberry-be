@@ -87,6 +87,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         try {
+            authCodeRepository.deleteByEmail(email);
             authCodeRepository.save(
                     AuthCode.builder()
                             .email(email)
@@ -115,6 +116,8 @@ public class AuthServiceImpl implements AuthService {
         if (!mailAuthRequest.getCode().equals(authCode.getCode())) {
             throw new AuthException("Invalid code", HttpStatus.UNAUTHORIZED);
         }
+
+        authCodeRepository.deleteByEmail(mailAuthRequest.getEmail());
     }
 
 
@@ -123,48 +126,7 @@ public class AuthServiceImpl implements AuthService {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, TRUE, "UTF-8");
 
-        String htmlContent = "<!DOCTYPE html>" +
-                "<html>" +
-                "<head>" +
-                "<meta charset=\"UTF-8\">" +
-                "<meta http-equiv=\"X-UA-Compatible\" content=\"IE=edge\">" +
-                "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">" +
-                "<style>" +
-                "body { margin: 0; padding: 0; font-family: 'Arial', sans-serif; background-color: #F4F6FA; }" +
-                ".container { max-width: 600px; margin: 0 auto; background-color: #F4F6FA; padding: 20px; }" +
-                ".header { text-align: left; padding: 10px; background-color: #F4F6FA; }" +
-                ".header img { max-width: 60px; }" +
-                ".title { font-size: 24px; font-weight: bold; color: #333333; margin-bottom: 20px; }" +
-                ".content { font-size: 16px; color: #333333; margin-bottom: 20px; }" +
-                ".code-box { background-color: #E2E8F5; padding: 15px; text-align: center; margin-top: 20px; margin-bottom: 20px; border-radius: 10px; }" +
-                ".code-box span { font-size: 32px; font-weight: bold; color: #4F5DCB; }" +
-                ".footer { font-size: 12px; color: #7D7D7D; text-align: center; margin-top: 30px; }" +
-                ".footer a { color: #4F5DCB; text-decoration: none; }" +
-                "</style>" +
-                "</head>" +
-                "<body>" +
-                "<div class=\"container\">" +
-                "<div class=\"header\">" +
-                "<img src=\"https://your-logo-url-here.com/logo.png\" alt=\"Blueberry Logo\" />" +
-                "</div>" +
-                "<div class=\"title\">이메일 인증 안내</div>" +
-                "<div class=\"content\">" +
-                "안녕하세요, 고객님 :)<br />" +
-                "이메일 인증 안내드립니다.<br />" +
-                "아래 발급된 이메일 인증번호를 복사하거나 직접 입력하여 인증을 완료해주세요.<br />" +
-                "개인정보 보호를 위해 인증번호는 <strong>5분</strong> 간 유효합니다." +
-                "</div>" +
-                "<div class=\"code-box\">" +
-                "인증 번호 <span>" + code + "</span>" +
-                "</div>" +
-                "<div class=\"footer\">" +
-                "본 메일은 발신 전용입니다.<br />" +
-                "</div>" +
-                "</div>" +
-                "</body>" +
-                "</html>";
-
-
+        String htmlContent = code;
         helper.setTo(email);
         helper.setSubject("메일인증");
         helper.setText(htmlContent, TRUE);
