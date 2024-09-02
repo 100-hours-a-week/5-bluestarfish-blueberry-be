@@ -1,6 +1,6 @@
 package com.bluestarfish.blueberry.config;
 
-import com.bluestarfish.blueberry.webrtc.KurentoHandler;
+import com.bluestarfish.blueberry.webrtc.handler.KurentoHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +13,13 @@ import org.springframework.web.socket.server.standard.ServletServerContainerFact
 @Configuration
 @RequiredArgsConstructor
 @EnableWebSocket
-public class WebRtcConfig implements WebSocketConfigurer {
+public class WebRTCConfig implements WebSocketConfigurer {
+
+    @Value("${frontend.server.ip}")
+    private String frontendServerIp;
+
+    @Value("${kurento.signal}")
+    private String signalUrl;
 
     private final KurentoHandler kurentoHandler;
 
@@ -23,12 +29,6 @@ public class WebRtcConfig implements WebSocketConfigurer {
         container.setMaxTextMessageBufferSize(32768);
         return container;
     }
-
-    @Value("${frontend.server.ip}")
-    private String frontendServerIp;
-
-    @Value("${kurento.signal}")
-    private String signalUrl;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
