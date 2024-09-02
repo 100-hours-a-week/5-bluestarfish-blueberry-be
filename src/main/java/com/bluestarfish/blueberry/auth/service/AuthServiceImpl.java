@@ -126,9 +126,30 @@ public class AuthServiceImpl implements AuthService {
         MimeMessage message = javaMailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, TRUE, "UTF-8");
 
-        String htmlContent = code;
+        String htmlContent = "<div style='width: 600px; padding: 20px; font-family: Arial, sans-serif; color: #333; background-color: #f4f4f4; border-radius: 10px;'>"
+                + "    <div style='text-align: center; margin-bottom: 20px;'>"
+                + "        <img src='cid:blueberryLogo' alt='Blueberry Logo' style='width: 100px;'/>"
+                + "        <h2 style='color: #3366CC; margin: 20px 0;'>이메일 인증 안내</h2>"
+                + "    </div>"
+                + "    <div style='padding: 20px; background-color: #fff; border-radius: 10px;'>"
+                + "        <p>이메일 인증 안내드립니다.<br>아래 발급된 이메일 인증코드를 회원가입 입력창에 입력해서 인증을 진행해주세요.</p>"
+                + "        <p style='font-size: 16px; color: #333;'>해당 인증코드는 <strong>5분</strong> 간 유효합니다.</p>"
+                + "        <div style='text-align: center; margin-top: 30px;'>"
+                + "            <span style='display: inline-block; padding: 10px 20px; background-color: #3366CC; color: #fff; font-size: 24px; border-radius: 5px;'>"
+                + code
+                + "            </span>"
+                + "        </div>"
+                + "    </div>"
+                + "    <p style='margin-top: 20px; font-size: 12px; color: #666;'>"
+                + "        궁금하신 사항은 <a href='https://blueberry826.com' style='color: #3366CC; text-decoration: none;'>블루베리 사이트 링크</a> 들어오셔서 문의주시면 감사하겠습니다."
+                + "    </p>"
+                + "</div>";
+
+
         helper.setTo(email);
         helper.setSubject("메일인증");
+
+
         helper.setText(htmlContent, TRUE);
         javaMailSender.send(message);
 
