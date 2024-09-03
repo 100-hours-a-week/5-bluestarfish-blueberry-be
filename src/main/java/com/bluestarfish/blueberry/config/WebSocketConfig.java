@@ -24,12 +24,12 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Value("${ws.publish}")
     private String publish;
+    
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) { //websocket 서버에 연결하는 websocket endpoint
         registry.addEndpoint(wsChatConnection).setAllowedOrigins(frontendServerIp) //변경하기
                 .withSockJS();
-
 
         registry.addEndpoint(wsStudyConnection).setAllowedOrigins(frontendServerIp)
                 .withSockJS();
