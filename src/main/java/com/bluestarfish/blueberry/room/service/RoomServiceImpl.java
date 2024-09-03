@@ -112,7 +112,17 @@ public class RoomServiceImpl implements RoomService {
 
     @Override
     public void entranceRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest) {
+        Room room = roomRepository.findByIdAndDeletedAtIsNull(roomId)
+                .orElseThrow(() -> new RoomException("Room not found this room id: " + roomId, HttpStatus.NOT_FOUND));
+        boolean needPassword = !room.getPassword().isEmpty();
         boolean isExisted = userRoomRepository.findByRoomIdAndUserId(roomId, userId).isPresent();
+
+        if(needPassword) {
+            if(userRoomRequest.getPassword() == null || !userRoomRequest.getPassword().equals(room.getPassword())) {
+                throw new RoomException("Password is not correct", HttpStatus.UNAUTHORIZED);
+            }
+        }
+
         if(isExisted) { // 재입장
             UserRoom userRoom = userRoomRepository.findByRoomIdAndUserId(roomId, userId)
                     .orElseThrow(() -> new UserRoomException("UserRoom not found this user id: " + userId, HttpStatus.NOT_FOUND));
@@ -120,8 +130,6 @@ public class RoomServiceImpl implements RoomService {
         } else { // 첫 입장
             User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                     .orElseThrow(() -> new UserRoomException("User not found this user id: " + userId, HttpStatus.NOT_FOUND));
-            Room room = roomRepository.findByIdAndDeletedAtIsNull(roomId)
-                    .orElseThrow(() -> new UserRoomException("Room not found this room id: " + roomId, HttpStatus.NOT_FOUND));
             userRoomRepository.save(UserRoom.builder()
                             .user(user)
                             .room(room)
