@@ -13,6 +13,7 @@ import lombok.Setter;
 public class RoomResponse {
     private Long id;
     private String title;
+    private boolean needPassword;
     private int maxUsers;
     private boolean isCamEnabled;
     private String thumbnail;
@@ -27,6 +28,7 @@ public class RoomResponse {
         return RoomResponse.builder()
                 .id(room.getId())
                 .title(room.getTitle())
+                .needPassword(!room.getPassword().isEmpty())
                 .maxUsers(room.getMaxUsers())
                 .isCamEnabled(room.isCamEnabled())
                 .thumbnail(room.getThumbnail())
