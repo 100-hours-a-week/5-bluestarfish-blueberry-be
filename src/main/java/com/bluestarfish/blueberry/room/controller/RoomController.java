@@ -80,7 +80,7 @@ public class RoomController {
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
-    @GetMapping("/password")
+    @PostMapping("/password")
     public ApiSuccessResponse<?> checkRoomPassword(
             @RequestBody RoomPasswordRequest roomPasswordRequest
     ) {
