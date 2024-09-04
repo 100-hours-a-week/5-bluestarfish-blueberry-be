@@ -27,6 +27,7 @@ public class WebRTCConfig implements WebSocketConfigurer {
     public ServletServerContainerFactoryBean createServletServerContainerFactoryBean() {
         ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
         container.setMaxTextMessageBufferSize(32768);
+        container.setMaxBinaryMessageBufferSize(32768);
         return container;
     }
 
