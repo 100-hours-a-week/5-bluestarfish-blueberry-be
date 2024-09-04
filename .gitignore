@@ -41,5 +41,7 @@ out/
 
 *.yml
 
+*.jpg
+
 ### QueryDSL ###
 **/generated
