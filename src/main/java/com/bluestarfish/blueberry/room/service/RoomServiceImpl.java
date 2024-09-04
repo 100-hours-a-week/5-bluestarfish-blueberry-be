@@ -6,6 +6,7 @@ import com.bluestarfish.blueberry.common.entity.UserRoom;
 import com.bluestarfish.blueberry.common.exception.UserRoomException;
 import com.bluestarfish.blueberry.common.repository.UserRoomRepository;
 import com.bluestarfish.blueberry.room.dto.RoomDetailResponse;
+import com.bluestarfish.blueberry.room.dto.RoomPasswordRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomResponse;
 import com.bluestarfish.blueberry.room.entity.Room;
@@ -154,5 +155,15 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public int getActiveMemberCount(Long roomId) {
         return userRoomRepository.countActiveMembersByRoomId(roomId);
+    }
+
+    @Override
+    public void checkRoomPassword(RoomPasswordRequest roomPasswordRequest) {
+        Room room = roomRepository.findByIdAndDeletedAtIsNull(roomPasswordRequest.getRoomId())
+                .orElseThrow(() -> new RoomException("Room not found this room id: " + roomPasswordRequest.getRoomId(), HttpStatus.NOT_FOUND));
+
+        if(!roomPasswordRequest.getPassword().equals(room.getPassword())) {
+            throw new RoomException("Password verification failed.", HttpStatus.UNAUTHORIZED);
+        }
     }
 }

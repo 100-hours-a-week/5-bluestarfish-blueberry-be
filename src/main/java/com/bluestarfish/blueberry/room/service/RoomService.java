@@ -2,6 +2,7 @@ package com.bluestarfish.blueberry.room.service;
 
 import com.bluestarfish.blueberry.common.dto.UserRoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomDetailResponse;
+import com.bluestarfish.blueberry.room.dto.RoomPasswordRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomResponse;
 import java.util.List;
@@ -16,4 +17,5 @@ public interface RoomService {
     void entranceRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest);
     void exitRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest);
     int getActiveMemberCount(Long roomId);
+    void checkRoomPassword(RoomPasswordRequest roomPasswordRequest);
 }
