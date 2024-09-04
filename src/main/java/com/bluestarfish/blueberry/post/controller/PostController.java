@@ -44,8 +44,8 @@ public class PostController {
     public ApiSuccessResponse<?> getPostList(
             @RequestParam(name = "page") int page,
             @RequestParam(name = "type", required = false) PostType postType,
-            @RequestParam(name = "recruited") boolean isRecruited
-            ) {
+            @RequestParam(name = "recruited", required = false) boolean isRecruited
+    ) {
         return handleSuccessResponse(postService.getAllPosts(page, postType, isRecruited), HttpStatus.OK);
     }
 

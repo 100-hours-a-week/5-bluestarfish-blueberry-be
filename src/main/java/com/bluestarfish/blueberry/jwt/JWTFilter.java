@@ -31,7 +31,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
     private static final String ACCESS_TOKEN_KEY = "Authorization";
-    private static final String USER_ID_KEY = "user-id";
     private static final String HTTP_METHOD_GET = "GET";
     private static final String HTTP_METHOD_POST = "POST";
     private static final String HTTP_METHOD_PATCH = "PATCH";
@@ -42,12 +41,12 @@ public class JWTFilter extends OncePerRequestFilter {
     private static final String LOGOUT_URL = "/api/v1/auth/logout";
     private static final String MAIL_AUTH_URL = "/api/v1/auth/mail";
     private static final String JOIN_URL = "/api/v1/users";
+    private static final String WHOAMI_URL = "/api/v1/users/whoami";
     private static final String VALIDATE_NICKNAME_URL = "/api/v1/users/nickname";
     private static final String RESET_PASSWORD_URL = "/api/v1/users/password";
     private static final String FIND_ROOMS_URL = "/api/v1/rooms";
     private static final String FIND_POSTS_URL = "/api/v1/posts";
     private static final String OAUTH_REDIRECT_URL = "/login/oauth2/code/kakao";
-    private static final String OAUTH_PAGE_URL = "/oauth2/authorization/kakao";
 
 
     private static final Map<String, List<String>> excludedUrls;
@@ -65,7 +64,7 @@ public class JWTFilter extends OncePerRequestFilter {
         tempMap.put(FIND_ROOMS_URL, List.of(HTTP_METHOD_GET));
         tempMap.put(FIND_POSTS_URL, List.of(HTTP_METHOD_GET));
         tempMap.put(OAUTH_REDIRECT_URL, List.of(HTTP_METHOD_GET));
-        tempMap.put(OAUTH_PAGE_URL, List.of(HTTP_METHOD_GET));
+        tempMap.put(WHOAMI_URL, List.of(HTTP_METHOD_GET));
 
         excludedUrls = tempMap;
     }
@@ -89,9 +88,10 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
+
         System.out.println(requestUri);
-        if (requestUri.contains("oauth2")) {
-            System.out.println(requestUri);
+
+        if (requestUri.contains("login")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -107,11 +107,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 .map(cookie -> URLDecoder.decode(cookie.getValue(), StandardCharsets.UTF_8))
                 .orElse(null);
 
-        Long userId = Arrays.stream(cookies)
-                .filter(cookie -> USER_ID_KEY.equals(cookie.getName()))
-                .findFirst()
-                .map(cookie -> Long.parseLong(cookie.getValue()))
-                .orElseThrow(() -> new AuthException("Invalid Token", HttpStatus.UNAUTHORIZED));
+        Long userId = jwtUtils.getId(authorization);
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new AuthException("The user ID contained within the cookie is absent",
@@ -136,13 +132,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 saveRefreshToken(user, jwtTokens.refreshToken());
                 response.addCookie(createCookie(ACCESS_TOKEN_KEY,
                         URLEncoder.encode(jwtTokens.accessToken(), StandardCharsets.UTF_8)));
-
-                Cookie userIdCookie = new Cookie(USER_ID_KEY, String.valueOf(userId));
-                userIdCookie.setHttpOnly(false);
-                userIdCookie.setSecure(true);
-                userIdCookie.setPath("/");
-                userIdCookie.setMaxAge(60 * 60 * 24);
-                response.addCookie(userIdCookie);
             }
 
             filterChain.doFilter(request, response);

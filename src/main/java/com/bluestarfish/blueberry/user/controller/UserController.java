@@ -1,7 +1,5 @@
 package com.bluestarfish.blueberry.user.controller;
 
-import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
-
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
 import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
@@ -9,16 +7,11 @@ import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
 import com.bluestarfish.blueberry.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.CookieValue;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.io.IOException;
+
+import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
 
 @RestController
 @RequestMapping("/api/v1/users")
@@ -31,6 +24,7 @@ public class UserController {
     public ApiSuccessResponse<?> whoami(
             @CookieValue(name = "Authorization") String accessToken
     ) {
+
         return handleSuccessResponse(userService.getUserByToken(accessToken), HttpStatus.OK);
     }
 
@@ -49,11 +43,11 @@ public class UserController {
         return handleSuccessResponse(userService.findById(id), HttpStatus.OK);
     }
 
-    @PatchMapping("/{userId}")
+    @PatchMapping(path = "/{userId}", consumes = "multipart/form-data")
     public ApiSuccessResponse<?> update(
             @PathVariable("userId") Long id,
-            @RequestBody UserUpdateRequest userUpdateRequest
-            ) {
+            @ModelAttribute UserUpdateRequest userUpdateRequest
+    ) throws IOException {
         userService.update(id, userUpdateRequest);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
@@ -77,8 +71,20 @@ public class UserController {
     @PatchMapping("/password")
     public ApiSuccessResponse<?> resetPassword(
             @RequestBody PasswordResetRequest passwordResetRequest
-            ) {
+    ) {
         userService.resetPassword(passwordResetRequest);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
+    }
+
+
+    // TODO: 친구추가 기능개발완료되면 API 작성
+    @GetMapping
+    public ApiSuccessResponse<?> findUsersByNickname(
+            @CookieValue("Authorization") String accessToken,
+            @RequestParam("keyword") String keyword
+    ) {
+        // 닉네임 기준 검색
+        // 본인은 쿠키값으로 확인
+        return handleSuccessResponse(null, HttpStatus.OK);
     }
 }
