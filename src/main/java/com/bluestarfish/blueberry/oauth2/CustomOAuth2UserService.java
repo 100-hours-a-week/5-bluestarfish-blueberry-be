@@ -29,8 +29,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         OAuth2User oAuth2User = super.loadUser(oAuth2UserRequest);
         KakaoResponse kakaoResponse = new KakaoResponse(oAuth2User.getAttributes());
 
-        String email = kakaoResponse.getEmail();
+        String email = kakaoResponse.getEmail(); // 식별자 붙인 이메일
 
+        // 이메일 찾고 없으면 저장 및 조회
+        // 있으면 조회
         User user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseGet(() -> userRepository.save(
                         User.builder()

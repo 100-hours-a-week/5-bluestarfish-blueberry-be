@@ -4,6 +4,7 @@ import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSu
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.common.dto.UserRoomRequest;
+import com.bluestarfish.blueberry.room.dto.RoomPasswordRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.service.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -77,5 +78,13 @@ public class RoomController {
             roomService.exitRoom(roomId, userId, userRoomRequest);
         }
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/password")
+    public ApiSuccessResponse<?> checkRoomPassword(
+            @RequestBody RoomPasswordRequest roomPasswordRequest
+    ) {
+        roomService.checkRoomPassword(roomPasswordRequest);
+        return handleSuccessResponse(HttpStatus.OK);
     }
 }
