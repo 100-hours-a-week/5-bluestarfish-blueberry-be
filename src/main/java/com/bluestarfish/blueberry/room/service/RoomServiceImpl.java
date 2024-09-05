@@ -5,6 +5,7 @@ import com.bluestarfish.blueberry.common.dto.UserRoomResponse;
 import com.bluestarfish.blueberry.common.entity.UserRoom;
 import com.bluestarfish.blueberry.common.exception.UserRoomException;
 import com.bluestarfish.blueberry.common.repository.UserRoomRepository;
+import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.room.dto.RoomDetailResponse;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomResponse;
@@ -13,6 +14,8 @@ import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -35,12 +38,19 @@ public class RoomServiceImpl implements RoomService {
     private final RoomRepository roomRepository;
     private final UserRoomRepository userRoomRepository;
     private final UserRepository userRepository;
+    private final JWTUtils jwtUtils;
 
     @Override
-    public void createRoom(RoomRequest roomRequest) {
+    public void createRoom(RoomRequest roomRequest, String accessToken) {
+        Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+
         Room room = roomRepository.save(roomRequest.toEntity());
         User user = userRepository.findByIdAndDeletedAtIsNull(roomRequest.getUserId())
                 .orElseThrow(() -> new RoomException("User not found with id: " + roomRequest.getUserId(), HttpStatus.NOT_FOUND));
+
+        if(!tokenId.equals(user.getId())) {
+            throw new RoomException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+        }
 
         UserRoom userRoom = UserRoom.builder()
                 .user(user)
@@ -104,7 +114,13 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
-    public void deleteRoomById(Long id) {
+    public void deleteRoomById(Long id, String accessToken) {
+        Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+
+        UserRoom userRoom = userRoomRepository.findByRoomIdAndIsHostTrue(id);
+        if(!tokenId.equals(userRoom.getUser().getId())) {
+            throw new RoomException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+        }
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
         room.setDeletedAt(LocalDateTime.now());
