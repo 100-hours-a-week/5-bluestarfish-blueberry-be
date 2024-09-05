@@ -1,9 +1,6 @@
 package com.bluestarfish.blueberry.user.service;
 
-import com.bluestarfish.blueberry.user.dto.JoinRequest;
-import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
-import com.bluestarfish.blueberry.user.dto.UserResponse;
-import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
+import com.bluestarfish.blueberry.user.dto.*;
 
 import java.io.IOException;
 
@@ -22,4 +19,5 @@ public interface UserService {
 
     void resetPassword(PasswordResetRequest passwordResetRequest);
 
+    StudyTimeResponse getStudyTime(Long userId);
 }

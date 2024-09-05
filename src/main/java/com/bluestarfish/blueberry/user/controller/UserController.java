@@ -87,4 +87,16 @@ public class UserController {
         // 본인은 쿠키값으로 확인
         return handleSuccessResponse(null, HttpStatus.OK);
     }
+
+    // 하루마다 모든 유저의 시간 기록해야함
+    // 조회api와 업데이트 api
+    // 조회하는데, 없으면 생성하고 00시간으로 조회
+    // 업데이트 api ㄱ
+
+    @GetMapping("/{userId}/time")
+    public ApiSuccessResponse<?> getStudyTime(
+            @PathVariable("userId") Long userId
+    ) {
+        return handleSuccessResponse(userService.getStudyTime(userId), HttpStatus.OK);
+    }
 }
