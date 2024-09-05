@@ -7,6 +7,7 @@ import com.bluestarfish.blueberry.comment.service.CommentService;
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,9 +26,10 @@ public class CommentController {
 
     @PostMapping
     public ApiSuccessResponse<?> registerComment(
-            @RequestBody CommentRequest commentRequest
+            @RequestBody CommentRequest commentRequest,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        commentService.createComment(commentRequest);
+        commentService.createComment(commentRequest, accessToken);
         return handleSuccessResponse(HttpStatus.CREATED);
     }
 
@@ -42,9 +44,10 @@ public class CommentController {
     @DeleteMapping("/{postId}/{commentId}")
     public ApiSuccessResponse<?> deleteComment(
             @PathVariable("postId") Long postId,
-            @PathVariable("commentId") Long commentId
+            @PathVariable("commentId") Long commentId,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        commentService.deleteCommentById(postId, commentId);
+        commentService.deleteCommentById(postId, commentId, accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 }

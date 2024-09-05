@@ -9,6 +9,7 @@ import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -27,12 +28,11 @@ public class RoomController {
 
     @PostMapping
     public ApiSuccessResponse<?> registerStudyRoom(
-
-            @RequestBody RoomRequest roomRequest
+            @RequestBody RoomRequest roomRequest,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        roomService.createRoom(roomRequest);
+        roomService.createRoom(roomRequest, accessToken);
         return handleSuccessResponse(HttpStatus.CREATED);
-
     }
 
     @GetMapping("/{roomId}")
@@ -60,9 +60,10 @@ public class RoomController {
 
     @DeleteMapping("/{roomId}")
     public ApiSuccessResponse<?> deleteStudyRoom(
-            @PathVariable("roomId") Long id
+            @PathVariable("roomId") Long id,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        roomService.deleteRoomById(id);
+        roomService.deleteRoomById(id, accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 

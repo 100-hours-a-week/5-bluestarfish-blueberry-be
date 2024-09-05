@@ -8,6 +8,7 @@ import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.post.service.PostService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -27,9 +28,10 @@ public class PostController {
 
     @PostMapping
     public ApiSuccessResponse<?> registerPost(
-            @RequestBody PostRequest postRequest
+            @RequestBody PostRequest postRequest,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        postService.createPost(postRequest);
+        postService.createPost(postRequest, accessToken);
         return handleSuccessResponse(HttpStatus.CREATED);
     }
 
@@ -52,17 +54,19 @@ public class PostController {
     @PatchMapping("/{postId}")
     public ApiSuccessResponse<?> updatePost(
             @PathVariable("postId") Long id,
-            @RequestBody PostRequest postRequest
+            @RequestBody PostRequest postRequest,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        postService.updatePostById(id, postRequest);
+        postService.updatePostById(id, postRequest, accessToken);
         return handleSuccessResponse(HttpStatus.OK);
     }
 
     @DeleteMapping("/{postId}")
     public ApiSuccessResponse<?> deletePost(
-            @PathVariable("postId") Long id
+            @PathVariable("postId") Long id,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        postService.deletePostById(id);
+        postService.deletePostById(id, accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 }
