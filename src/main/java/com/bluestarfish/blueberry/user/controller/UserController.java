@@ -46,17 +46,19 @@ public class UserController {
     @PatchMapping(path = "/{userId}", consumes = "multipart/form-data")
     public ApiSuccessResponse<?> update(
             @PathVariable("userId") Long id,
-            @ModelAttribute UserUpdateRequest userUpdateRequest
+            @ModelAttribute UserUpdateRequest userUpdateRequest,
+            @CookieValue(name = "Authorization") String accessToken
     ) throws IOException {
-        userService.update(id, userUpdateRequest);
+        userService.update(id, userUpdateRequest, accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
     @DeleteMapping("/{userId}")
     public ApiSuccessResponse<?> withdraw(
-            @PathVariable("userId") Long id
+            @PathVariable("userId") Long id,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        userService.withdraw(id);
+        userService.withdraw(id, accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
@@ -70,9 +72,10 @@ public class UserController {
 
     @PatchMapping("/password")
     public ApiSuccessResponse<?> resetPassword(
-            @RequestBody PasswordResetRequest passwordResetRequest
+            @RequestBody PasswordResetRequest passwordResetRequest,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        userService.resetPassword(passwordResetRequest);
+        userService.resetPassword(passwordResetRequest, accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 

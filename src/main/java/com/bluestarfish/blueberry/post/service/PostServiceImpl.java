@@ -1,17 +1,19 @@
 package com.bluestarfish.blueberry.post.service;
 
+import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.post.dto.PostRequest;
 import com.bluestarfish.blueberry.post.dto.PostResponse;
 import com.bluestarfish.blueberry.post.entity.Post;
 import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.post.exception.PostException;
 import com.bluestarfish.blueberry.post.repository.PostRepository;
-import com.bluestarfish.blueberry.room.dto.RoomResponse;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.room.service.RoomService;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,11 +34,17 @@ public class PostServiceImpl implements PostService {
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
     private final RoomService roomService;
+    private final JWTUtils jwtUtils;
 
     @Override
-    public void createPost(PostRequest postRequest) {
+    public void createPost(PostRequest postRequest, String accessToken) {
         User user = userRepository.findByIdAndDeletedAtIsNull(postRequest.getUserId())
                 .orElseThrow(() -> new PostException("User not fount with id: " + postRequest.getUserId(), HttpStatus.NOT_FOUND));
+        Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+        if(!tokenId.equals(user.getId())) {
+            throw new PostException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+        }
+
         Post post;
 
         if(postRequest.getRoomId() != null) {
@@ -107,7 +115,13 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void updatePostById(Long id, PostRequest postRequest) {
+    public void updatePostById(Long id, PostRequest postRequest, String accessToken) {
+        Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+
+        if(!tokenId.equals(postRequest.getUserId())) {
+            throw new PostException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+        }
+
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
         if(postRequest.getRoomId() != null) {
@@ -123,9 +137,14 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public void deletePostById(Long id) {
+    public void deletePostById(Long id, String accessToken) {
+        Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
+
+        if(!tokenId.equals(post.getUser().getId())) {
+            throw new PostException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+        }
         post.setDeletedAt(LocalDateTime.now());
     }
 }
