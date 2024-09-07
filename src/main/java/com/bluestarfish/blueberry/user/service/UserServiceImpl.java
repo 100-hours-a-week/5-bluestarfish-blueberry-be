@@ -58,9 +58,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse findById(
-            Long id
-    ) {
+    public UserResponse findById(Long id) {
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
         );
@@ -73,6 +71,7 @@ public class UserServiceImpl implements UserService {
             Long id,
             UserUpdateRequest userUpdateRequest
     ) throws IOException {
+
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
         );

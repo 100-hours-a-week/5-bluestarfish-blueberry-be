@@ -1,21 +1,14 @@
 package com.bluestarfish.blueberry.room.controller;
 
-import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
-
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.common.dto.UserRoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
 
 @RestController
 @RequestMapping(value = "/api/v1/rooms", produces = "application/json; charset=utf8")
@@ -24,14 +17,12 @@ public class RoomController {
 
     private final RoomService roomService;
 
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public ApiSuccessResponse<?> registerStudyRoom(
-
-            @RequestBody RoomRequest roomRequest
+            @ModelAttribute RoomRequest roomRequest
     ) {
         roomService.createRoom(roomRequest);
         return handleSuccessResponse(HttpStatus.CREATED);
-
     }
 
     @GetMapping("/{roomId}")
