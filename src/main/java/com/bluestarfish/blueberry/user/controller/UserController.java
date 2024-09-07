@@ -5,7 +5,6 @@ import com.bluestarfish.blueberry.user.dto.JoinRequest;
 import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
 import com.bluestarfish.blueberry.user.dto.StudyTimeUpdateRequest;
 import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
-import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.bluestarfish.blueberry.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,13 +20,11 @@ import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSu
 public class UserController {
 
     private final UserService userService;
-    private final UserRepository userRepository;
 
     @GetMapping("/whoami")
     public ApiSuccessResponse<?> whoami(
             @CookieValue(name = "Authorization") String accessToken
     ) {
-
         return handleSuccessResponse(userService.getUserByToken(accessToken), HttpStatus.OK);
     }
 
@@ -89,15 +86,8 @@ public class UserController {
             @CookieValue("Authorization") String accessToken,
             @RequestParam("keyword") String keyword
     ) {
-        // 닉네임 기준 검색
-        // 본인은 쿠키값으로 확인
         return handleSuccessResponse(null, HttpStatus.OK);
     }
-
-    // 하루마다 모든 유저의 시간 기록해야함
-    // 조회api와 업데이트 api
-    // 조회하는데, 없으면 생성하고 00시간으로 조회
-    // 업데이트 api ㄱ
 
     @GetMapping("/{userId}/time")
     public ApiSuccessResponse<?> getStudyTime(
@@ -113,5 +103,12 @@ public class UserController {
     ) {
         userService.updateStudyTime(userId, studyTimeUpdateRequest);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
+    }
+
+    @GetMapping("/{userId}/ranks")
+    public ApiSuccessResponse<?> getRanks(
+            @PathVariable Long userId
+    ) {
+        return handleSuccessResponse(userService.getRanks(userId), HttpStatus.OK);
     }
 }

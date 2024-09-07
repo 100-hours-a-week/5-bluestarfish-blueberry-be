@@ -5,7 +5,9 @@ import com.bluestarfish.blueberry.common.dto.UserRoomResponse;
 import com.bluestarfish.blueberry.common.entity.UserRoom;
 import com.bluestarfish.blueberry.common.exception.UserRoomException;
 import com.bluestarfish.blueberry.common.repository.UserRoomRepository;
+import com.bluestarfish.blueberry.common.s3.S3Uploader;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
+
 import com.bluestarfish.blueberry.room.dto.RoomDetailResponse;
 import com.bluestarfish.blueberry.room.dto.RoomPasswordRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
@@ -22,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -30,22 +33,38 @@ import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.sql.Time;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
 public class RoomServiceImpl implements RoomService {
+    @Value("${room.image.storage}")
+    private String roomThumbnailStorage;
 
     private final RoomRepository roomRepository;
     private final UserRoomRepository userRoomRepository;
     private final UserRepository userRepository;
     private final JWTUtils jwtUtils;
+    private final S3Uploader s3Uploader;
 
     @Override
     public void createRoom(RoomRequest roomRequest, String accessToken) {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
-        Room room = roomRepository.save(roomRequest.toEntity());
+        String imagePath = null;
+        MultipartFile multipartFile = roomRequest.getThumbnail();
+
+        if (multipartFile != null && !multipartFile.isEmpty()) {
+            imagePath = s3Uploader.upload(multipartFile, roomThumbnailStorage);
+        }
+
+        Room room = roomRepository.save(roomRequest.toEntity(imagePath));
         User user = userRepository.findByIdAndDeletedAtIsNull(roomRequest.getUserId())
                 .orElseThrow(() -> new RoomException("User not found with id: " + roomRequest.getUserId(), HttpStatus.NOT_FOUND));
 
@@ -83,22 +102,22 @@ public class RoomServiceImpl implements RoomService {
         Pageable pageable = PageRequest.of(page, 10, Sort.by(Direction.DESC, "createdAt"));
 
         // 이후 QueryDSL or @Query 스타일로 변경 검토
-        if(keyword == null && isCamEnabled == null) { // 검색 keyword가 없고, 캠 여부가 전체 인 경우 조회
+        if (keyword == null && isCamEnabled == null) { // 검색 keyword가 없고, 캠 여부가 전체 인 경우 조회
             return roomRepository.findByDeletedAtIsNull(pageable)
                     .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
-        } else if(keyword == null) { // 검색어가 없고, 캠여부가 true or false 인 경우 조회
-            if(isCamEnabled) {
+        } else if (keyword == null) { // 검색어가 없고, 캠여부가 true or false 인 경우 조회
+            if (isCamEnabled) {
                 return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(true, pageable)
                         .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
             } else {
                 return roomRepository.findByIsCamEnabledAndDeletedAtIsNull(false, pageable)
                         .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
             }
-        } else if(isCamEnabled == null) { // 검색어가 있고, 캠 여부가 all 인 경우 조회
+        } else if (isCamEnabled == null) { // 검색어가 있고, 캠 여부가 all 인 경우 조회
             return roomRepository.findByTitleContainingAndDeletedAtIsNull(keyword, pageable)
                     .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
         } else { // 검색어가 있고, 캠 여부가 true or false 인 경우 조회
-            if(isCamEnabled) {
+            if (isCamEnabled) {
                 return roomRepository.findByTitleContainingAndIsCamEnabledAndDeletedAtIsNull(keyword, true, pageable)
                         .map(room -> RoomResponse.from(room, getActiveMemberCount(room.getId())));
             } else {
@@ -141,6 +160,7 @@ public class RoomServiceImpl implements RoomService {
         }
 
         if(isExisted) { // 재입장
+
             UserRoom userRoom = userRoomRepository.findByRoomIdAndUserId(roomId, userId)
                     .orElseThrow(() -> new UserRoomException("UserRoom not found this user id: " + userId, HttpStatus.NOT_FOUND));
             userRoom.setActive(true);
@@ -148,16 +168,16 @@ public class RoomServiceImpl implements RoomService {
             User user = userRepository.findByIdAndDeletedAtIsNull(userId)
                     .orElseThrow(() -> new UserRoomException("User not found this user id: " + userId, HttpStatus.NOT_FOUND));
             userRoomRepository.save(UserRoom.builder()
-                            .user(user)
-                            .room(room)
-                            .isHost(userRoomRequest.isHost())
-                            .isActive(userRoomRequest.isActive())
-                            .camEnabled(userRoomRequest.isCamEnabled())
-                            .micEnabled(userRoomRequest.isMicEnabled())
-                            .speakerEnabled(userRoomRequest.isSpeakerEnabled())
-                            .goalTime(userRoomRequest.getGoalTime())
-                            .dayTime(userRoomRequest.getDayTime())
-                            .build());
+                    .user(user)
+                    .room(room)
+                    .isHost(userRoomRequest.isHost())
+                    .isActive(userRoomRequest.isActive())
+                    .camEnabled(userRoomRequest.isCamEnabled())
+                    .micEnabled(userRoomRequest.isMicEnabled())
+                    .speakerEnabled(userRoomRequest.isSpeakerEnabled())
+                    .goalTime(userRoomRequest.getGoalTime())
+                    .dayTime(userRoomRequest.getDayTime())
+                    .build());
         }
     }
 
