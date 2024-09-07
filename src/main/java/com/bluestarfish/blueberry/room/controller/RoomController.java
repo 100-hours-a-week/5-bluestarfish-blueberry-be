@@ -50,6 +50,13 @@ public class RoomController {
         return handleSuccessResponse(roomService.getMyRooms(userId), HttpStatus.OK);
     }
 
+    @GetMapping("/visited/{userId}")
+    public ApiSuccessResponse<?> getVisitedRoomList(
+            @PathVariable("userId") Long userId
+    ) {
+        return handleSuccessResponse(roomService.getVisitedRooms(userId), HttpStatus.OK);
+    }
+
     @DeleteMapping("/{roomId}")
     public ApiSuccessResponse<?> deleteStudyRoom(
             @PathVariable("roomId") Long id,
