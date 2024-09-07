@@ -21,7 +21,10 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -166,9 +169,44 @@ public class UserServiceImpl implements UserService {
         );
 
         StudyTime studyTime = studyTimeRepository.findByUserIdAndToday(userId).orElseThrow(
-                () -> new UserException("", HttpStatus.NOT_FOUND)
+                () -> new UserException("Study time data not found", HttpStatus.NOT_FOUND)
         );
 
         studyTime.setTime(studyTimeUpdateRequest.getTime());
+    }
+
+    @Override
+    public List<Rank> getRanks(Long userId) {
+        userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+        );
+
+        List<StudyTime> studyTimes = studyTimeRepository.findRanksTop10Yesterday();
+
+        AtomicInteger order = new AtomicInteger(1);
+
+        List<Rank> ranks = studyTimes.stream()
+                .map(studyTime -> Rank.builder()
+                        .rank(order.getAndIncrement())
+                        .nickname(studyTime.getUser().getNickname())
+                        .time(studyTime.getTime())
+                        .build())
+                .collect(Collectors.toList());
+
+        //FIXME: 이후 수정
+        studyTimes = studyTimeRepository.findRanksYesterday(userId);
+        for (StudyTime studyTime : studyTimes) {
+            if (studyTime.getUser().getId().equals(userId)) {
+                ranks.add(
+                        Rank.builder()
+                                .rank(studyTimes.indexOf(studyTime) + 1)
+                                .nickname(studyTime.getUser().getNickname())
+                                .time(studyTime.getTime())
+                                .build()
+                );
+            }
+        }
+
+        return ranks;
     }
 }
