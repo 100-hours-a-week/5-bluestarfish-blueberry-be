@@ -20,7 +20,7 @@ public class RoomController {
 
     @PostMapping(consumes = "multipart/form-data")
     public ApiSuccessResponse<?> registerStudyRoom(
-            @ModelAttribute RoomRequest roomRequest
+            @ModelAttribute RoomRequest roomRequest,
             @CookieValue(name = "Authorization") String accessToken
     ) {
         roomService.createRoom(roomRequest, accessToken);
