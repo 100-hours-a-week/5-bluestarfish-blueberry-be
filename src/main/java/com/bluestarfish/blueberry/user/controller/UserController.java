@@ -3,7 +3,9 @@ package com.bluestarfish.blueberry.user.controller;
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.user.dto.JoinRequest;
 import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
+import com.bluestarfish.blueberry.user.dto.StudyTimeUpdateRequest;
 import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
+import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.bluestarfish.blueberry.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,6 +21,7 @@ import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSu
 public class UserController {
 
     private final UserService userService;
+    private final UserRepository userRepository;
 
     @GetMapping("/whoami")
     public ApiSuccessResponse<?> whoami(
@@ -98,5 +101,14 @@ public class UserController {
             @PathVariable("userId") Long userId
     ) {
         return handleSuccessResponse(userService.getStudyTime(userId), HttpStatus.OK);
+    }
+
+    @PatchMapping("/{userId}/time")
+    public ApiSuccessResponse<?> updateStudyTime(
+            @PathVariable("userId") Long userId,
+            @RequestBody StudyTimeUpdateRequest studyTimeUpdateRequest
+    ) {
+        userService.updateStudyTime(userId, studyTimeUpdateRequest);
+        return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 }

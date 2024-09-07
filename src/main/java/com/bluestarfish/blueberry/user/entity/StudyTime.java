@@ -5,18 +5,20 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 
 import java.sql.Time;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "study_time", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"user_id", "date"})
-})
+@Table(
+        name = "study_time",
+        uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"user_id", "date"})
+        }
+)
 public class StudyTime {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,20 +29,27 @@ public class StudyTime {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    private Date date;
+    private LocalDate date;
 
     @Column(nullable = false)
-    @ColumnDefault("00:00:00")
     private Time time;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.time == null) {
+            this.time = Time.valueOf("00:00:00"); // 기본값 설정
+        }
+
+        date = LocalDate.now();
+    }
 
     @Builder
     public StudyTime(
             User user,
-            Date date
+            LocalDate date
     ) {
         this.user = user;
         this.date = date;
-        this.time = Time.valueOf("00:00:00");
     }
 
 }

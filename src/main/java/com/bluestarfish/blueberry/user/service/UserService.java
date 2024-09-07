@@ -20,4 +20,6 @@ public interface UserService {
     void resetPassword(PasswordResetRequest passwordResetRequest);
 
     StudyTimeResponse getStudyTime(Long userId);
+
+    void updateStudyTime(Long userId, StudyTimeUpdateRequest studyTimeUpdateRequest);
 }

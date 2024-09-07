@@ -9,6 +9,7 @@ import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.StudyTimeRepository;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -20,9 +21,9 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -138,21 +139,36 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public StudyTimeResponse getStudyTime(Long userId) {
-        // 유저가 존재하는지 조회
+
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
         );
 
-        Optional<StudyTime> studyTimes = studyTimeRepository.findByUserIdAndToday(user.getId());
+        Optional<StudyTime> studyTime = studyTimeRepository.findByUserIdAndToday(user.getId());
 
-        return StudyTimeResponse.from(studyTimes.orElse(studyTimeRepository.save(
-                                StudyTime.builder()
-                                        .user(user)
-                                        .date(new Date())
-                                        .build()
-                        )
+        if (studyTime.isPresent()) {
+            return StudyTimeResponse.from(studyTime.get());
+        }
+
+        return StudyTimeResponse.from(
+                studyTimeRepository.save(
+                        StudyTime.builder()
+                                .user(user)
+                                .build()
                 )
         );
+    }
 
+    @Override
+    public void updateStudyTime(Long userId, StudyTimeUpdateRequest studyTimeUpdateRequest) {
+        userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+        );
+
+        StudyTime studyTime = studyTimeRepository.findByUserIdAndToday(userId).orElseThrow(
+                () -> new UserException("", HttpStatus.NOT_FOUND)
+        );
+
+        studyTime.setTime(studyTimeUpdateRequest.getTime());
     }
 }

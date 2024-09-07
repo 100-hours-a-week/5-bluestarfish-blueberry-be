@@ -6,7 +6,7 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -19,11 +19,12 @@ public class CustomStudyTimeRepositoryImpl implements CustomStudyTimeRepository 
     public Optional<StudyTime> findByUserIdAndToday(Long userId) {
         QStudyTime qStudyTime = QStudyTime.studyTime;
 
-        Date today = new Date();
+        System.out.println("asd " + LocalDate.now());
+
 
         StudyTime studyTime = queryFactory.selectFrom(qStudyTime)
                 .where(
-                        qStudyTime.date.eq(today)
+                        qStudyTime.date.eq(LocalDate.now()) // 객체비교? 값이아니라?
                                 .and(qStudyTime.user.id.eq(userId))
                 )
                 .fetchOne();
