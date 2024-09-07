@@ -2,14 +2,14 @@ package com.bluestarfish.blueberry.user.service;
 
 import com.bluestarfish.blueberry.common.s3.S3Uploader;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
-import com.bluestarfish.blueberry.user.dto.JoinRequest;
-import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
-import com.bluestarfish.blueberry.user.dto.UserResponse;
-import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
+import com.bluestarfish.blueberry.user.dto.*;
+import com.bluestarfish.blueberry.user.entity.StudyTime;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
+import com.bluestarfish.blueberry.user.repository.StudyTimeRepository;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -23,6 +23,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -32,6 +33,7 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final StudyTimeRepository studyTimeRepository;
     private final S3Uploader s3Uploader;
     private final JWTUtils jwtUtils;
 
@@ -148,5 +150,40 @@ public class UserServiceImpl implements UserService {
         }
 
         user.setPassword(passwordEncoder.encode(passwordResetRequest.getPassword()));
+    }
+
+    @Override
+    public StudyTimeResponse getStudyTime(Long userId) {
+
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+        );
+
+        Optional<StudyTime> studyTime = studyTimeRepository.findByUserIdAndToday(user.getId());
+
+        if (studyTime.isPresent()) {
+            return StudyTimeResponse.from(studyTime.get());
+        }
+
+        return StudyTimeResponse.from(
+                studyTimeRepository.save(
+                        StudyTime.builder()
+                                .user(user)
+                                .build()
+                )
+        );
+    }
+
+    @Override
+    public void updateStudyTime(Long userId, StudyTimeUpdateRequest studyTimeUpdateRequest) {
+        userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+        );
+
+        StudyTime studyTime = studyTimeRepository.findByUserIdAndToday(userId).orElseThrow(
+                () -> new UserException("", HttpStatus.NOT_FOUND)
+        );
+
+        studyTime.setTime(studyTimeUpdateRequest.getTime());
     }
 }
