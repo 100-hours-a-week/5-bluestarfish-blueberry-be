@@ -115,6 +115,12 @@ public class RoomServiceImpl implements RoomService {
     }
 
     @Override
+    public List<RoomResponse> getVisitedRooms(Long userId) {
+        return roomRepository.findRoomsByUserIdAndDeletedAtIsNull(userId).stream().map(room -> RoomResponse.from(room,
+                userRoomRepository.countActiveMembersByRoomId(room.getId()))).collect(Collectors.toList());
+    }
+
+    @Override
     public void deleteRoomById(Long id, String accessToken) {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 

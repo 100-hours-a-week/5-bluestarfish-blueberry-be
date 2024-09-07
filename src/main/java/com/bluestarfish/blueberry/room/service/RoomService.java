@@ -13,6 +13,7 @@ public interface RoomService {
     RoomDetailResponse getRoomById(Long id);
     Page<RoomResponse> getAllRooms(int page, String keyword, Boolean isCanEnabled);
     List<RoomResponse> getMyRooms(Long userId);
+    List<RoomResponse> getVisitedRooms(Long userId);
     void deleteRoomById(Long id, String accessToken);
     void entranceRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest);
     void exitRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest);
