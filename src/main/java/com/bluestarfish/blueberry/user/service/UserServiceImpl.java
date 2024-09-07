@@ -69,12 +69,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public void update(
             Long id,
-            UserUpdateRequest userUpdateRequest
+            UserUpdateRequest userUpdateRequest,
+            String accessToken
     ) throws IOException {
 
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
         );
+
+        Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+        if(!tokenId.equals(user.getId())) {
+            throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+        }
 
         // FIXME: 이후 리팩토링
         String imagePath = null;
@@ -110,12 +116,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void withdraw(
-            Long id
+            Long id,
+            String accessToken
     ) {
         User user = userRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(
                         () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
                 );
+        Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+        if(!tokenId.equals(user.getId())) {
+            throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+        }
 
         user.setDeletedAt(LocalDateTime.now());
     }
@@ -129,12 +140,16 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void resetPassword(PasswordResetRequest passwordResetRequest) {
+    public void resetPassword(PasswordResetRequest passwordResetRequest, String accessToken) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(passwordResetRequest.getEmail())
                 .orElseThrow(
                         () -> new UserException("A user with " + passwordResetRequest.getEmail() + " not found",
                                 HttpStatus.NOT_FOUND)
                 );
+        Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+        if(!tokenId.equals(user.getId())) {
+            throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+        }
 
         user.setPassword(passwordEncoder.encode(passwordResetRequest.getPassword()));
     }

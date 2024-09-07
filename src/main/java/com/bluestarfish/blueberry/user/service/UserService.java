@@ -12,13 +12,13 @@ public interface UserService {
 
     UserResponse findById(Long id);
 
-    void update(Long id, UserUpdateRequest userUpdateRequest) throws IOException;
+    void update(Long id, UserUpdateRequest userUpdateRequest, String accessToken) throws IOException;
 
-    void withdraw(Long id);
+    void withdraw(Long id, String accessToken);
 
     void validateNickname(String nickname);
 
-    void resetPassword(PasswordResetRequest passwordResetRequest);
+    void resetPassword(PasswordResetRequest passwordResetRequest, String accessToken);
 
     StudyTimeResponse getStudyTime(Long userId);
 

@@ -2,6 +2,7 @@ package com.bluestarfish.blueberry.room.controller;
 
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.common.dto.UserRoomRequest;
+import com.bluestarfish.blueberry.room.dto.RoomPasswordRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.service.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,9 @@ public class RoomController {
     @PostMapping(consumes = "multipart/form-data")
     public ApiSuccessResponse<?> registerStudyRoom(
             @ModelAttribute RoomRequest roomRequest
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        roomService.createRoom(roomRequest);
+        roomService.createRoom(roomRequest, accessToken);
         return handleSuccessResponse(HttpStatus.CREATED);
     }
 
@@ -50,9 +52,10 @@ public class RoomController {
 
     @DeleteMapping("/{roomId}")
     public ApiSuccessResponse<?> deleteStudyRoom(
-            @PathVariable("roomId") Long id
+            @PathVariable("roomId") Long id,
+            @CookieValue(name = "Authorization") String accessToken
     ) {
-        roomService.deleteRoomById(id);
+        roomService.deleteRoomById(id, accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
@@ -68,5 +71,13 @@ public class RoomController {
             roomService.exitRoom(roomId, userId, userRoomRequest);
         }
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
+    }
+
+    @PostMapping("/password")
+    public ApiSuccessResponse<?> checkRoomPassword(
+            @RequestBody RoomPasswordRequest roomPasswordRequest
+    ) {
+        roomService.checkRoomPassword(roomPasswordRequest);
+        return handleSuccessResponse(HttpStatus.OK);
     }
 }
