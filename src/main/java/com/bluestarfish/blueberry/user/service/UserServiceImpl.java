@@ -78,7 +78,7 @@ public class UserServiceImpl implements UserService {
         );
 
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
-        if(!tokenId.equals(user.getId())) {
+        if (!tokenId.equals(user.getId())) {
             throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
@@ -93,11 +93,6 @@ public class UserServiceImpl implements UserService {
 
             if (user.getProfileImage() == null) {
                 imagePath = s3Uploader.upload(multipartFile, userImageStorage);
-            }
-        } else {
-            if (user.getProfileImage() != null) {
-                s3Uploader.deleteFile(user.getProfileImage());
-                user.setProfileImage(imagePath);
             }
         }
 
@@ -124,7 +119,7 @@ public class UserServiceImpl implements UserService {
                         () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
                 );
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
-        if(!tokenId.equals(user.getId())) {
+        if (!tokenId.equals(user.getId())) {
             throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
@@ -147,7 +142,7 @@ public class UserServiceImpl implements UserService {
                                 HttpStatus.NOT_FOUND)
                 );
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
-        if(!tokenId.equals(user.getId())) {
+        if (!tokenId.equals(user.getId())) {
             throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
