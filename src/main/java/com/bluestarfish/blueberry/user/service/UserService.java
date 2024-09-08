@@ -1,11 +1,9 @@
 package com.bluestarfish.blueberry.user.service;
 
-import com.bluestarfish.blueberry.user.dto.JoinRequest;
-import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
-import com.bluestarfish.blueberry.user.dto.UserResponse;
-import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
+import com.bluestarfish.blueberry.user.dto.*;
 
 import java.io.IOException;
+import java.util.List;
 
 public interface UserService {
     UserResponse getUserByToken(String accessToken);
@@ -14,12 +12,17 @@ public interface UserService {
 
     UserResponse findById(Long id);
 
-    void update(Long id, UserUpdateRequest userUpdateRequest) throws IOException;
+    void update(Long id, UserUpdateRequest userUpdateRequest, String accessToken) throws IOException;
 
-    void withdraw(Long id);
+    void withdraw(Long id, String accessToken);
 
     void validateNickname(String nickname);
 
-    void resetPassword(PasswordResetRequest passwordResetRequest);
+    void resetPassword(PasswordResetRequest passwordResetRequest, String accessToken);
 
+    StudyTimeResponse getStudyTime(Long userId);
+
+    void updateStudyTime(Long userId, StudyTimeUpdateRequest studyTimeUpdateRequest);
+
+    List<Rank> getRanks(Long userId);
 }
