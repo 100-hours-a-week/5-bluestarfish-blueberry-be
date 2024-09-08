@@ -1,24 +1,19 @@
 package com.bluestarfish.blueberry.room.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.ColumnDefault;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name="rooms")
+@Table(name = "rooms")
 public class Room {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,23 +22,24 @@ public class Room {
 
     private String title;
 
-    @Column(name="max_users")
+    @Column(name = "max_users")
     private int maxUsers;
 
     @ColumnDefault("true")
-    @Column(name="cam_enabled")
+    @Column(name = "cam_enabled")
     private boolean isCamEnabled;
 
     private String password;
 
+    @Column(length = 4096)
     private String thumbnail;
 
     private String description;
 
-    @Column(name="created_at", nullable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
-    @Column(name="deleted_at")
+    @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
     @PrePersist
@@ -53,12 +49,12 @@ public class Room {
 
     @Builder
     public Room(
-        String title,
-        int maxUsers,
-        boolean isCamEnabled,
-        String password,
-        String thumbnail,
-        String description
+            String title,
+            int maxUsers,
+            boolean isCamEnabled,
+            String password,
+            String thumbnail,
+            String description
     ) {
         this.title = title;
         this.maxUsers = maxUsers;
