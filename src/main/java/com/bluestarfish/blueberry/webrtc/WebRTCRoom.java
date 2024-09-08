@@ -59,12 +59,20 @@ public class WebRTCRoom implements Closeable {
     }
 
     private UserSession createNewParticipant(String userName, WebSocketSession session) {
-        User user = userRepository.findByEmailAndDeletedAtIsNotNull(userName)
+        User user = userRepository.findByNicknameAndDeletedAtIsNull(userName)
                 .orElseThrow(
                         () -> new UserException("", HttpStatus.NOT_FOUND)
                 );
 
-        return new UserSession(user.getId(), userName, user.getProfileImage(), roomId, session, pipeline, userRepository);
+        return new UserSession(
+                user.getId(),
+                userName,
+                user.getProfileImage(),
+                roomId,
+                session,
+                pipeline,
+                userRepository
+        );
     }
 
     public void leave(UserSession userSession) throws IOException {
