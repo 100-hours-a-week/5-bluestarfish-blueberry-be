@@ -7,7 +7,6 @@ import com.bluestarfish.blueberry.common.exception.UserRoomException;
 import com.bluestarfish.blueberry.common.repository.UserRoomRepository;
 import com.bluestarfish.blueberry.common.s3.S3Uploader;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
-
 import com.bluestarfish.blueberry.room.dto.RoomDetailResponse;
 import com.bluestarfish.blueberry.room.dto.RoomPasswordRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
@@ -17,13 +16,8 @@ import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
-import java.sql.Time;
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -35,11 +29,14 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.Time;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -64,11 +61,13 @@ public class RoomServiceImpl implements RoomService {
             imagePath = s3Uploader.upload(multipartFile, roomThumbnailStorage);
         }
 
+        
+        System.out.println("이미지 Path: " + imagePath);
         Room room = roomRepository.save(roomRequest.toEntity(imagePath));
         User user = userRepository.findByIdAndDeletedAtIsNull(roomRequest.getUserId())
                 .orElseThrow(() -> new RoomException("User not found with id: " + roomRequest.getUserId(), HttpStatus.NOT_FOUND));
 
-        if(!tokenId.equals(user.getId())) {
+        if (!tokenId.equals(user.getId())) {
             throw new RoomException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
@@ -144,7 +143,7 @@ public class RoomServiceImpl implements RoomService {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
         UserRoom userRoom = userRoomRepository.findByRoomIdAndIsHostTrue(id);
-        if(!tokenId.equals(userRoom.getUser().getId())) {
+        if (!tokenId.equals(userRoom.getUser().getId())) {
             throw new RoomException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
@@ -159,13 +158,13 @@ public class RoomServiceImpl implements RoomService {
         boolean needPassword = !room.getPassword().isEmpty();
         boolean isExisted = userRoomRepository.findByRoomIdAndUserId(roomId, userId).isPresent();
 
-        if(needPassword) {
-            if(userRoomRequest.getPassword() == null || !userRoomRequest.getPassword().equals(room.getPassword())) {
+        if (needPassword) {
+            if (userRoomRequest.getPassword() == null || !userRoomRequest.getPassword().equals(room.getPassword())) {
                 throw new RoomException("Password is not correct", HttpStatus.UNAUTHORIZED);
             }
         }
 
-        if(isExisted) { // 재입장
+        if (isExisted) { // 재입장
 
             UserRoom userRoom = userRoomRepository.findByRoomIdAndUserId(roomId, userId)
                     .orElseThrow(() -> new UserRoomException("UserRoom not found this user id: " + userId, HttpStatus.NOT_FOUND));
@@ -204,7 +203,7 @@ public class RoomServiceImpl implements RoomService {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(roomPasswordRequest.getRoomId())
                 .orElseThrow(() -> new RoomException("Room not found this room id: " + roomPasswordRequest.getRoomId(), HttpStatus.NOT_FOUND));
 
-        if(!roomPasswordRequest.getPassword().equals(room.getPassword())) {
+        if (!roomPasswordRequest.getPassword().equals(room.getPassword())) {
             throw new RoomException("Password verification failed.", HttpStatus.UNAUTHORIZED);
         }
     }
