@@ -81,7 +81,6 @@ public class JWTFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
         if (excludedUrls.containsKey(requestUri) && excludedUrls.get(requestUri).contains(method)) {
