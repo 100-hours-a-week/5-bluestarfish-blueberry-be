@@ -24,7 +24,7 @@ public class StudyTimeServiceImpl implements StudyTimeService {
         return weeklyData;
     }
 
-    public List<ChartDataResponse> getWeeklyStudyTime(Long userId) {
+    private List<ChartDataResponse> getWeeklyStudyTime(Long userId) {
         List<ChartDataResponse> chartDataResponses = new ArrayList<>();
 
         // 최근 7주에 대한 데이터
@@ -51,7 +51,7 @@ public class StudyTimeServiceImpl implements StudyTimeService {
         return chartDataResponses;
     }
 
-    public List<ChartDataResponse> getMonthlyStudyTime(Long userId) {
+    private List<ChartDataResponse> getMonthlyStudyTime(Long userId) {
         List<ChartDataResponse> chartDataResponses = new ArrayList<>();
 
         // 최근 12개월에 대한 데이터
