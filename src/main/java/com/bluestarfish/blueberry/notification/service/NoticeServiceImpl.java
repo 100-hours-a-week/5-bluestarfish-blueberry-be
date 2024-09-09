@@ -10,6 +10,8 @@ import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Service;
@@ -47,8 +49,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     }
 
-    //특정 사용자에게 알림 전송
-    public void sendNotice(Long userId, NoticeDto noticeDto) {
+    public Notification sendNotice(Long userId, NoticeDto noticeDto) {
         SseEmitter emitter = clientEmitters.get(noticeDto.getReceiverId());
         if (emitter != null) {
             try {
@@ -71,20 +72,65 @@ public class NoticeServiceImpl implements NoticeService {
                         .room(room)
                         .build();
 
-                // 알림 저장
-                notificationRepository.save(notification);
+                Notification savedNotification = notificationRepository.save(notification);
 
-                // SSE로 알림 전송
-                emitter.send(SseEmitter.event().name("notification").data("Send Notification Success"));
+                // SSE로 알림 전송 (저장된 알림 정보 전송)
+                emitter.send(SseEmitter.event().name("notification").data(savedNotification));
+
+                return savedNotification;
 
             } catch (IOException e) {
                 clientEmitters.remove(noticeDto.getReceiverId());
             }
         }
+
+        return null;
+    }
+
+
+    public Notification updateNotificationStatus(Long userId, Long noticeId, NoticeDto noticeDto) {
+        SseEmitter emitter = clientEmitters.get(noticeDto.getReceiverId());
+
+        if (emitter != null) {
+            try {
+                Notification notification = notificationRepository.findById(noticeId)
+                        .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+
+                notification.setNotiStatus(noticeDto.getNotiStatus());
+                Notification savedNotification = notificationRepository.save(notification);
+
+                // SSE로 알림 전송 (저장된 알림 정보 전송)
+                emitter.send(SseEmitter.event().name("notification").data(savedNotification.getNotiStatus()));
+
+                return savedNotification;
+
+            } catch (IOException e) {
+                clientEmitters.remove(noticeDto.getReceiverId());
+            }
+        }
+        return null;
     }
 
     @Override
-    public void updateNotificationStatus(Long userId, NoticeDto noticeDto) {
+    public List<NoticeDto> listNotifications(Long userId) {
+
+        List<Notification> notifications = notificationRepository.findByReceiverIdAndDeletedAtIsNull(userId);
+
+        return notifications.stream()
+                .map(NoticeDto::from)
+                .toList();
+    }
+
+    @Override
+    public void deleteNotification(Long noticeId) {
+        Notification notification = notificationRepository.findById(noticeId)
+                .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+        notification.setDeletedAt(LocalDateTime.now());
+
+        notificationRepository.save(notification);
+
 
     }
+
+
 }

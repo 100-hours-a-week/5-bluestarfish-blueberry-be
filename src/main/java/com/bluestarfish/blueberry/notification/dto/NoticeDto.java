@@ -33,8 +33,8 @@ public class NoticeDto {
                 .receiverId(notification.getReceiver().getId())
                 .notiType(notification.getNotiType())
                 .notiStatus(notification.getNotiStatus())
-                .commentId(notification.getComment().getId())
-                .roomId(notification.getRoom().getId())
+                .commentId(notification.getComment() != null ? notification.getComment().getId() : null)
+                .roomId(notification.getRoom() != null ? notification.getRoom().getId() : null)
                 .build();
     }
 }
