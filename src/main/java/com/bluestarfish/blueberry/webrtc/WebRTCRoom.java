@@ -1,5 +1,8 @@
 package com.bluestarfish.blueberry.webrtc;
 
+import com.bluestarfish.blueberry.user.entity.User;
+import com.bluestarfish.blueberry.user.exception.UserException;
+import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
@@ -8,6 +11,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.Continuation;
 import org.kurento.client.MediaPipeline;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.socket.WebSocketSession;
 
 import java.io.Closeable;
@@ -26,10 +30,16 @@ public class WebRTCRoom implements Closeable {
     private final ConcurrentMap<String, UserSession> participants = new ConcurrentHashMap<>();
     private final MediaPipeline pipeline;
     private final String roomId;
+    private final UserRepository userRepository;
 
-    public WebRTCRoom(String roomId, MediaPipeline pipeline) {
+    public WebRTCRoom(
+            String roomId,
+            MediaPipeline pipeline,
+            UserRepository userRepository
+    ) {
         this.roomId = roomId;
         this.pipeline = pipeline;
+        this.userRepository = userRepository;
         log.info("{} 번 방 생성", roomId);
     }
 
@@ -49,7 +59,20 @@ public class WebRTCRoom implements Closeable {
     }
 
     private UserSession createNewParticipant(String userName, WebSocketSession session) {
-        return new UserSession(userName, roomId, session, pipeline);
+        User user = userRepository.findByNicknameAndDeletedAtIsNull(userName)
+                .orElseThrow(
+                        () -> new UserException("", HttpStatus.NOT_FOUND)
+                );
+
+        return new UserSession(
+                user.getId(),
+                userName,
+                user.getProfileImage(),
+                roomId,
+                session,
+                pipeline,
+                userRepository
+        );
     }
 
     public void leave(UserSession userSession) throws IOException {
@@ -75,6 +98,10 @@ public class WebRTCRoom implements Closeable {
         JsonObject newParticipantMsg = new JsonObject();
         newParticipantMsg.addProperty(SOCKET_MESSAGE_ID, NEW_PARTICIPANT_ARRIVED);
         newParticipantMsg.addProperty(NAME, newParticipant.getName());
+        User user = userRepository.findByNicknameAndDeletedAtIsNull(newParticipant.getName())
+                .orElseThrow(
+                        () -> new UserException("", HttpStatus.NOT_FOUND)
+                );
 
         return newParticipantMsg;
     }

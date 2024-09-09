@@ -1,10 +1,14 @@
 package com.bluestarfish.blueberry.webrtc;
 
+import com.bluestarfish.blueberry.user.entity.User;
+import com.bluestarfish.blueberry.user.exception.UserException;
+import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.JsonUtils;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -19,24 +23,32 @@ import static com.bluestarfish.blueberry.webrtc.constant.RTCMessage.*;
 @Getter
 public class UserSession implements Closeable {
 
+    private final Long userId;
     private final String name;
+    private final String profileImage;
     private final WebSocketSession session;
     private final MediaPipeline pipeline;
     private final String roomName;
     private final WebRtcEndpoint outgoingMedia;
     private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
+    private final UserRepository userRepository;
 
     public UserSession(
+            Long userId,
             String name,
+            String profileImage,
             String roomName,
             WebSocketSession session,
-            MediaPipeline pipeline
+            MediaPipeline pipeline,
+            UserRepository userRepository
     ) {
-
-        this.pipeline = pipeline;
+        this.userId = userId;
         this.name = name;
+        this.profileImage = profileImage;
+        this.pipeline = pipeline;
         this.session = session;
         this.roomName = roomName;
+        this.userRepository = userRepository;
         this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline).build();
 
         this.outgoingMedia.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
@@ -68,10 +80,15 @@ public class UserSession implements Closeable {
     ) throws IOException {
         log.info("'{}'번 방 FROM '{}' TO '{}' offer 도착", roomName, sender.getName(), name);
         log.info("'{}' SDP Offer: {}", sender.getName(), sdpOffer);
+        User user = userRepository.findByNicknameAndDeletedAtIsNull(sender.getName()).orElseThrow(
+                () -> new UserException("", HttpStatus.NOT_FOUND)
+        );
 
         String ipSdpAnswer = getEndpointForUser(sender).processOffer(sdpOffer);
         JsonObject scParams = new JsonObject();
         scParams.addProperty(SOCKET_MESSAGE_ID, RECEIVE_VIDEO_ANSWER);
+        scParams.addProperty("userId", user.getId());
+        scParams.addProperty("profileImage", user.getProfileImage());
         scParams.addProperty(NAME, sender.getName());
         scParams.addProperty(SDP_ANSWER, ipSdpAnswer);
 

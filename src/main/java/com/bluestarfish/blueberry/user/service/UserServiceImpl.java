@@ -2,14 +2,14 @@ package com.bluestarfish.blueberry.user.service;
 
 import com.bluestarfish.blueberry.common.s3.S3Uploader;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
-import com.bluestarfish.blueberry.user.dto.JoinRequest;
-import com.bluestarfish.blueberry.user.dto.PasswordResetRequest;
-import com.bluestarfish.blueberry.user.dto.UserResponse;
-import com.bluestarfish.blueberry.user.dto.UserUpdateRequest;
+import com.bluestarfish.blueberry.user.dto.*;
+import com.bluestarfish.blueberry.user.entity.StudyTime;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
+import com.bluestarfish.blueberry.user.repository.StudyTimeRepository;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,8 +21,12 @@ import java.io.IOException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -32,6 +36,7 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final StudyTimeRepository studyTimeRepository;
     private final S3Uploader s3Uploader;
     private final JWTUtils jwtUtils;
 
@@ -53,9 +58,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserResponse findById(
-            Long id
-    ) {
+    public UserResponse findById(Long id) {
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
         );
@@ -69,12 +72,13 @@ public class UserServiceImpl implements UserService {
             UserUpdateRequest userUpdateRequest,
             String accessToken
     ) throws IOException {
+
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
                 () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
         );
 
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
-        if(!tokenId.equals(user.getId())) {
+        if (!tokenId.equals(user.getId())) {
             throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
@@ -89,11 +93,6 @@ public class UserServiceImpl implements UserService {
 
             if (user.getProfileImage() == null) {
                 imagePath = s3Uploader.upload(multipartFile, userImageStorage);
-            }
-        } else {
-            if (user.getProfileImage() != null) {
-                s3Uploader.deleteFile(user.getProfileImage());
-                user.setProfileImage(imagePath);
             }
         }
 
@@ -120,7 +119,7 @@ public class UserServiceImpl implements UserService {
                         () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
                 );
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
-        if(!tokenId.equals(user.getId())) {
+        if (!tokenId.equals(user.getId())) {
             throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
@@ -143,10 +142,80 @@ public class UserServiceImpl implements UserService {
                                 HttpStatus.NOT_FOUND)
                 );
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
-        if(!tokenId.equals(user.getId())) {
+        if (!tokenId.equals(user.getId())) {
             throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
         user.setPassword(passwordEncoder.encode(passwordResetRequest.getPassword()));
+    }
+
+    @Override
+    public StudyTimeResponse getStudyTime(Long userId) {
+
+        User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+        );
+
+        Optional<StudyTime> studyTime = studyTimeRepository.findByUserIdAndToday(user.getId());
+
+        if (studyTime.isPresent()) {
+            return StudyTimeResponse.from(studyTime.get());
+        }
+
+        return StudyTimeResponse.from(
+                studyTimeRepository.save(
+                        StudyTime.builder()
+                                .user(user)
+                                .build()
+                )
+        );
+    }
+
+    @Override
+    public void updateStudyTime(Long userId, StudyTimeUpdateRequest studyTimeUpdateRequest) {
+        userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+        );
+
+        StudyTime studyTime = studyTimeRepository.findByUserIdAndToday(userId).orElseThrow(
+                () -> new UserException("Study time data not found", HttpStatus.NOT_FOUND)
+        );
+
+        studyTime.setTime(studyTimeUpdateRequest.getTime());
+    }
+
+    @Override
+    public List<Rank> getRanks(Long userId) {
+        userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
+                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+        );
+
+        List<StudyTime> studyTimes = studyTimeRepository.findRanksTop10Yesterday();
+
+        AtomicInteger order = new AtomicInteger(1);
+
+        List<Rank> ranks = studyTimes.stream()
+                .map(studyTime -> Rank.builder()
+                        .rank(order.getAndIncrement())
+                        .nickname(studyTime.getUser().getNickname())
+                        .time(studyTime.getTime())
+                        .build())
+                .collect(Collectors.toList());
+
+        //FIXME: 이후 수정
+        studyTimes = studyTimeRepository.findRanksYesterday(userId);
+        for (StudyTime studyTime : studyTimes) {
+            if (studyTime.getUser().getId().equals(userId)) {
+                ranks.add(
+                        Rank.builder()
+                                .rank(studyTimes.indexOf(studyTime) + 1)
+                                .nickname(studyTime.getUser().getNickname())
+                                .time(studyTime.getTime())
+                                .build()
+                );
+            }
+        }
+
+        return ranks;
     }
 }
