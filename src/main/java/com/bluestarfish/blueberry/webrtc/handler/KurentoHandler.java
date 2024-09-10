@@ -59,9 +59,21 @@ public class KurentoHandler extends TextWebSocketHandler {
             case IS_MIC_ON:
                 isMicOn(jsonMessage, userSession);
                 break;
+            case "pingPong":
+                pingPong(jsonMessage, userSession);
             default:
                 break;
         }
+    }
+
+    private void pingPong(
+            JsonObject jsonMessage,
+            UserSession userSession
+    ) throws IOException {
+        JsonObject pongMessage = new JsonObject();
+        pongMessage.addProperty("id", "pingPong");
+        pongMessage.addProperty("message", "pong");
+        userSession.sendMessage(pongMessage);
     }
 
     private void isCamOn(

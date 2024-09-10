@@ -54,6 +54,7 @@ public class RoomServiceImpl implements RoomService {
     public void createRoom(RoomRequest roomRequest, String accessToken) {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
+        // 스터디룸 썸네일 이미지 처리
         String imagePath = null;
         MultipartFile multipartFile = roomRequest.getThumbnail();
 
@@ -61,9 +62,7 @@ public class RoomServiceImpl implements RoomService {
             imagePath = s3Uploader.upload(multipartFile, roomThumbnailStorage);
         }
 
-        
-        System.out.println("이미지 Path: " + imagePath);
-        Room room = roomRepository.save(roomRequest.toEntity(imagePath));
+        // 요청 보낸 유저 확인
         User user = userRepository.findByIdAndDeletedAtIsNull(roomRequest.getUserId())
                 .orElseThrow(() -> new RoomException("User not found with id: " + roomRequest.getUserId(), HttpStatus.NOT_FOUND));
 
@@ -71,6 +70,13 @@ public class RoomServiceImpl implements RoomService {
             throw new RoomException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
+        // 유저가 만든 스터디룸 개수 확인
+        if(countRoomByUserID(user.getId()) >= 5) {
+            throw new RoomException("Too Many Room to Make More Rooms.", HttpStatus.FORBIDDEN);
+        }
+
+        // 스터디룸 데이터 생성
+        Room room = roomRepository.save(roomRequest.toEntity(imagePath));
         UserRoom userRoom = UserRoom.builder()
                 .user(user)
                 .room(room)
@@ -84,6 +90,12 @@ public class RoomServiceImpl implements RoomService {
                 .build();
 
         userRoomRepository.save(userRoom);
+    }
+
+    // 유저가 만든 스터디룸의 개수를 반환
+    private int countRoomByUserID(Long userId) {
+        List<Room> rooms = roomRepository.findRoomsByUserIdAndIsHost(userId);
+        return rooms.size();
     }
 
     @Override

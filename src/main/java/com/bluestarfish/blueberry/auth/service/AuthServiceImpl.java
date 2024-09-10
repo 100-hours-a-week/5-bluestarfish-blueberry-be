@@ -76,11 +76,10 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void sendMail(MailRequest mailRequest) {
-
         String email = mailRequest.getEmail();
 
         if (mailRequest.getType().equals(MailAuthType.JOIN.getType())) {
-            userRepository.findByEmailAndDeletedAtIsNotNull(email)
+            userRepository.findByEmail(email)
                     .ifPresent(user -> {
                         throw new AuthException("The email address already exists", HttpStatus.CONFLICT);
                     });
@@ -105,7 +104,6 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void authenticateCode(MailAuthRequest mailAuthRequest) {
-
         AuthCode authCode = authCodeRepository.findByEmail(mailAuthRequest.getEmail())
                 .orElseThrow(() -> new AuthException("No auth code found for the requested email address", HttpStatus.NOT_FOUND));
 
@@ -117,7 +115,10 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthException("Invalid code", HttpStatus.UNAUTHORIZED);
         }
 
-        authCodeRepository.deleteByEmail(mailAuthRequest.getEmail());
+        // 인증성공하면 인증테이블에서 해당 데이터 코드값을 pass 로 수정
+        // 회원가입 버튼 클릭 시 본인의 인증 코드가 테이블에 존재하고 인증에 통과되었는지 확인한 후 회원가입 진행
+        // 이렇게 진행하지 않으면 따로 api 호출을 통해, 이메일 인증없이 가입이 가능함
+        authCode.setCode("pass");
     }
 
 
@@ -128,7 +129,7 @@ public class AuthServiceImpl implements AuthService {
 
         String htmlContent = "<div style='width: 600px; padding: 20px; font-family: Arial, sans-serif; color: #333; background-color: #f4f4f4; border-radius: 10px;'>"
                 + "    <div style='text-align: center; margin-bottom: 20px;'>"
-                + "        <img src='cid:blueberryLogo' alt='Blueberry Logo' style='width: 100px;'/>"
+                + "        <img src='https://bluestarfish.s3.ap-northeast-2.amazonaws.com/assets/blueberry.png' alt='Blueberry Logo' style='width: 100px;'/>"
                 + "        <h2 style='color: #3366CC; margin: 20px 0;'>이메일 인증 안내</h2>"
                 + "    </div>"
                 + "    <div style='padding: 20px; background-color: #fff; border-radius: 10px;'>"

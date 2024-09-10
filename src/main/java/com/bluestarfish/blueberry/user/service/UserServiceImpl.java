@@ -1,5 +1,7 @@
 package com.bluestarfish.blueberry.user.service;
 
+import com.bluestarfish.blueberry.auth.entity.AuthCode;
+import com.bluestarfish.blueberry.auth.repository.AuthCodeRepository;
 import com.bluestarfish.blueberry.common.s3.S3Uploader;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.user.dto.*;
@@ -36,6 +38,7 @@ public class UserServiceImpl implements UserService {
 
     private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final AuthCodeRepository authCodeRepository;
     private final StudyTimeRepository studyTimeRepository;
     private final S3Uploader s3Uploader;
     private final JWTUtils jwtUtils;
@@ -48,13 +51,26 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void join(JoinRequest joinRequest) {
-        userRepository.findByEmailAndDeletedAtIsNull(joinRequest.getEmail())
+        // 인증코드 테이블에서 요청한 이메일의 인증이 통과되었는지 확인 하고 회원가입 진행
+        // 일단 있는지 확인하고 있다면 값 까지 확인해서 pass라면 다음 진행
+        // 하나라도 아니면 회원가입 실패응답
+        AuthCode authCode = authCodeRepository.findByEmail(joinRequest.getEmail())
+                .orElseThrow(() -> new UserException("Email verification is required", HttpStatus.UNAUTHORIZED));
+
+        if (!authCode.getCode().equals("pass")) {
+            throw new UserException("Email verification is required", HttpStatus.UNAUTHORIZED);
+        }
+
+        userRepository.findByEmail(joinRequest.getEmail())
                 .ifPresent(user -> {
                     throw new UserException("The email address already exists", HttpStatus.CONFLICT);
                 });
 
         joinRequest.setPassword(passwordEncoder.encode(joinRequest.getPassword()));
         userRepository.save(joinRequest.toEntity());
+
+        // 메일인증이 완료되었고, 회원가입 진행 성공하면 더 이상 인증코드 데이터는 필요없으므로 삭제
+        authCodeRepository.deleteByEmail(joinRequest.getEmail());
     }
 
     @Override
