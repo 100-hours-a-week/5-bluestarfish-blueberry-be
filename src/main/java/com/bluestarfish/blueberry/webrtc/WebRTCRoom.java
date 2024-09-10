@@ -48,27 +48,26 @@ public class WebRTCRoom implements Closeable {
         this.close();
     }
 
-    public UserSession join(String userName, WebSocketSession session) throws IOException {
-        UserSession participant = createNewParticipant(userName, session);
+    public UserSession join(JsonObject jsonMessage, WebSocketSession session) throws IOException {
+        UserSession participant = createNewParticipant(jsonMessage, session);
         joinRoom(participant);
         participants.put(participant.getName(), participant);
         sendParticipantNames(participant);
 
-        log.info("'{}'번 방: '{}' 참가", roomId, userName);
+        log.info("'{}'번 방: '{}' 참가", roomId, jsonMessage.get(NAME).getAsString());
+
         return participant;
     }
 
-    private UserSession createNewParticipant(String userName, WebSocketSession session) {
-        User user = userRepository.findByNicknameAndDeletedAtIsNull(userName)
+    private UserSession createNewParticipant(JsonObject jsonMessage, WebSocketSession session) {
+        User user = userRepository.findById(jsonMessage.get("userId").getAsLong())
                 .orElseThrow(
                         () -> new UserException("", HttpStatus.NOT_FOUND)
                 );
+        jsonMessage.addProperty("profileImage", user.getProfileImage());
 
         return new UserSession(
-                user.getId(),
-                userName,
-                user.getProfileImage(),
-                roomId,
+                jsonMessage,
                 session,
                 pipeline,
                 userRepository

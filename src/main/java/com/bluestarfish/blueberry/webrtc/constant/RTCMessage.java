@@ -9,6 +9,7 @@ public class RTCMessage {
     public static final String IS_MIC_ON = "isMicOn";
     public static final String SOCKET_MESSAGE_ID = "id";
     public static final String SENDER = "sender";
+    public static final String MESSAGE = "message";
     public static final String SDP_OFFER = "sdpOffer";
     public static final String CANDIDATE = "candidate";
     public static final String SDP_MEDIA_ID = "sdpMid";
@@ -22,4 +23,7 @@ public class RTCMessage {
     public static final String ICE_CANDIDATE = "iceCandidate";
     public static final String RECEIVE_VIDEO_ANSWER = "receiveVideoAnswer";
     public static final String SDP_ANSWER = "sdpAnswer";
+    public static final String PING_PONG = "pingPong";
+    public static final String PING_PONG_ANSWER = "pong";
+    public static final String PING_PONG_QUESTION = "ping";
 }
