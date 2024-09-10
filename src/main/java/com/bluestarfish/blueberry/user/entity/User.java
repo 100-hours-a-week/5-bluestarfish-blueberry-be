@@ -29,7 +29,7 @@ public class User {
     @Column(unique = true)
     private String nickname;
 
-    @Column(name = "profile_image")
+    @Column(name = "profile_image", length = 4096)
     private String profileImage;
 
     @Enumerated(EnumType.STRING)

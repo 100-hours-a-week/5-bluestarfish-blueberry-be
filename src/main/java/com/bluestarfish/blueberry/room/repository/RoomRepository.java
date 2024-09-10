@@ -25,4 +25,11 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
             + ")"
             + "AND r.deletedAt is NULL")
     List<Room> findRoomsByUserIdAndIsHost(@Param("userId") Long userId);
+
+    @Query("SELECT r FROM Room r WHERE r.id IN ("
+            + "SELECT ur.room.id FROM UserRoom ur "
+            + "WHERE ur.user.id = :userId "
+            + ")"
+            + "AND r.deletedAt is NULL")
+    List<Room> findRoomsByUserIdAndDeletedAtIsNull(@Param("userId") Long userId);
 }

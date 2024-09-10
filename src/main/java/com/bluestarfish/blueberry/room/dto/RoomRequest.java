@@ -1,11 +1,8 @@
 package com.bluestarfish.blueberry.room.dto;
 
 import com.bluestarfish.blueberry.room.entity.Room;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @Getter
 @Setter
@@ -19,16 +16,16 @@ public class RoomRequest {
     private int maxUsers;
     private boolean isCamEnabled;
     private String password;
-    private String thumbnail;
+    private MultipartFile thumbnail;
     private String description;
 
-    public Room toEntity() {
+    public Room toEntity(String thumbnailUrl) {
         return Room.builder()
                 .title(title)
                 .maxUsers(maxUsers)
                 .isCamEnabled(isCamEnabled)
                 .password(password)
-                .thumbnail(thumbnail)
+                .thumbnail(thumbnailUrl)
                 .description(description)
                 .build();
     }

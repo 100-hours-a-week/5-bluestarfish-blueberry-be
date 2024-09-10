@@ -1,7 +1,6 @@
 package com.bluestarfish.blueberry.room.dto;
 
 import com.bluestarfish.blueberry.common.dto.UserRoomResponse;
-import com.bluestarfish.blueberry.common.entity.UserRoom;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalDateTime;
@@ -18,7 +17,7 @@ public class RoomDetailResponse {
     private String title;
     private int maxUsers;
     private boolean isCamEnabled;
-    private String password;
+    private boolean needPassword;
     private String thumbnail;
     private String description;
     private List<UserRoomResponse> userRooms;
@@ -33,7 +32,7 @@ public class RoomDetailResponse {
                 .title(room.getTitle())
                 .maxUsers(room.getMaxUsers())
                 .isCamEnabled(room.isCamEnabled())
-                .password(room.getPassword())
+                .needPassword(!room.getPassword().isEmpty())
                 .thumbnail(room.getThumbnail())
                 .description(room.getDescription())
                 .userRooms(userRooms)
