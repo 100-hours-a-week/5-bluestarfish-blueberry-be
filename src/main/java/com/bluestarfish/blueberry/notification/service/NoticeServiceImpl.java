@@ -132,9 +132,5 @@ public class NoticeServiceImpl implements NoticeService {
         notification.setDeletedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
-
-
     }
-
-
 }
