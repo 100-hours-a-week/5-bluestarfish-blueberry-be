@@ -56,4 +56,14 @@ public class CustomStudyTimeRepositoryImpl implements CustomStudyTimeRepository 
                 .orderBy(qStudyTime.time.desc())
                 .fetch();
     }
+
+    @Override
+    public List<StudyTime> findStudyTimesBetweenDates(Long userId, LocalDate startDate, LocalDate endDate) {
+        QStudyTime qStudyTime = QStudyTime.studyTime;
+
+        return queryFactory.selectFrom(qStudyTime)
+                .where(qStudyTime.user.id.eq(userId)
+                        .and(qStudyTime.date.between(startDate, endDate)))
+                .fetch();
+    }
 }
