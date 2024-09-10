@@ -6,6 +6,7 @@ import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
 import com.bluestarfish.blueberry.post.dto.PostRequest;
 import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.post.service.PostService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -28,7 +29,7 @@ public class PostController {
 
     @PostMapping
     public ApiSuccessResponse<?> registerPost(
-            @RequestBody PostRequest postRequest,
+            @Valid @RequestBody PostRequest postRequest,
             @CookieValue(name = "Authorization") String accessToken
     ) {
         postService.createPost(postRequest, accessToken);
