@@ -4,16 +4,19 @@ import com.bluestarfish.blueberry.comment.entity.Comment;
 import com.bluestarfish.blueberry.comment.repository.CommentRepository;
 import com.bluestarfish.blueberry.notification.dto.NoticeDto;
 import com.bluestarfish.blueberry.notification.entity.Notification;
+import com.bluestarfish.blueberry.notification.exception.NotificationException;
 import com.bluestarfish.blueberry.notification.repository.NotificationRepository;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
+import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
@@ -54,9 +57,10 @@ public class NoticeServiceImpl implements NoticeService {
         if (emitter != null) {
             try {
                 User sender = userRepository.findById(userId)
-                        .orElseThrow(() -> new IllegalArgumentException("Sender not found"));
+                        .orElseThrow(() -> new UserException("User id " + userId + " not found", HttpStatus.NOT_FOUND));
                 User receiver = userRepository.findById(noticeDto.getReceiverId())
-                        .orElseThrow(() -> new IllegalArgumentException("Receiver not found"));
+                        .orElseThrow(() -> new UserException(
+                                "Receiver Id" + noticeDto.getReceiverId() + " not found", HttpStatus.NOT_FOUND));
                 Comment comment =
                         noticeDto.getCommentId() != null ? commentRepository.findById(noticeDto.getCommentId())
                                 .orElse(null) : null;
@@ -94,7 +98,7 @@ public class NoticeServiceImpl implements NoticeService {
         if (emitter != null) {
             try {
                 Notification notification = notificationRepository.findById(noticeId)
-                        .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+                        .orElseThrow(() -> new NotificationException("Notification not found", HttpStatus.NOT_FOUND));
 
                 notification.setNotiStatus(noticeDto.getNotiStatus());
                 Notification savedNotification = notificationRepository.save(notification);
@@ -124,7 +128,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public void deleteNotification(Long noticeId) {
         Notification notification = notificationRepository.findById(noticeId)
-                .orElseThrow(() -> new IllegalArgumentException("Notification not found"));
+                .orElseThrow(() -> new NotificationException("Notification not found", HttpStatus.NOT_FOUND));
         notification.setDeletedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
