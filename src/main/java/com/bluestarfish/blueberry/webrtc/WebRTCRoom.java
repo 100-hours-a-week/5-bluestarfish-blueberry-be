@@ -95,13 +95,15 @@ public class WebRTCRoom implements Closeable {
     }
 
     private JsonObject createNewParticipantMessage(UserSession newParticipant) {
-        JsonObject newParticipantMsg = new JsonObject();
-        newParticipantMsg.addProperty(SOCKET_MESSAGE_ID, NEW_PARTICIPANT_ARRIVED);
-        newParticipantMsg.addProperty(NAME, newParticipant.getName());
         User user = userRepository.findByNicknameAndDeletedAtIsNull(newParticipant.getName())
                 .orElseThrow(
                         () -> new UserException("", HttpStatus.NOT_FOUND)
                 );
+        JsonObject newParticipantMsg = new JsonObject();
+        newParticipantMsg.addProperty(SOCKET_MESSAGE_ID, NEW_PARTICIPANT_ARRIVED);
+        newParticipantMsg.addProperty(NAME, newParticipant.getName());
+        newParticipantMsg.addProperty("userId", user.getId());
+        newParticipantMsg.addProperty("profileImage", user.getProfileImage());
 
         return newParticipantMsg;
     }
