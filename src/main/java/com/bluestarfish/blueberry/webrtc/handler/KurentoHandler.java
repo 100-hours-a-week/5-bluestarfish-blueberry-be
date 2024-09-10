@@ -70,13 +70,15 @@ public class KurentoHandler extends TextWebSocketHandler {
             JsonObject jsonMessage,
             UserSession userSession
     ) throws IOException {
-        if (jsonMessage.get(PING_PONG).equals(PING_PONG_QUESTION)) {
+        if (jsonMessage.get(MESSAGE).getAsString().equals(PING_PONG_QUESTION)) {
             log.info("핑 도착");
 
             JsonObject pongMessage = new JsonObject();
             pongMessage.addProperty(SOCKET_MESSAGE_ID, PING_PONG);
             pongMessage.addProperty(MESSAGE, PING_PONG_ANSWER);
             userSession.sendMessage(pongMessage);
+
+            return;
         }
 
         log.error("핑 메시지 에러: {}", jsonMessage);

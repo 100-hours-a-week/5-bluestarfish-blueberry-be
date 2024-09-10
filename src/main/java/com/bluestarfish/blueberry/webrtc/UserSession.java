@@ -43,7 +43,11 @@ public class UserSession implements Closeable {
     ) {
         this.userId = jsonMessage.get("userId").getAsLong();
         this.name = jsonMessage.get("name").getAsString();
-        this.profileImage = jsonMessage.get("profileImage").getAsString();
+        if (!jsonMessage.get("profileImage").isJsonNull()) {
+            this.profileImage = jsonMessage.get("profileImage").getAsString();
+        } else {
+            this.profileImage = null;
+        }
         this.roomName = jsonMessage.get("room").getAsString();
         this.camEnabled = jsonMessage.get("camEnabled").getAsBoolean();
         this.micEnabled = jsonMessage.get("micEnabled").getAsBoolean();
