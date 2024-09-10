@@ -1,5 +1,6 @@
 package com.bluestarfish.blueberry.webrtc;
 
+import com.bluestarfish.blueberry.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
@@ -15,12 +16,13 @@ import java.util.concurrent.ConcurrentMap;
 public class WebRTCRoomManager {
     private final ConcurrentMap<String, WebRTCRoom> rooms = new ConcurrentHashMap<>();
     private final KurentoClient kurento;
+    private final UserRepository userRepository;
 
     public WebRTCRoom getRoom(String roomId) {
         return Optional.ofNullable(rooms.get(roomId))
                 .orElseGet(() -> {
                     log.info("'{}'번 방이 존재하지 않습니다. 새로운 방을 생성합니다.", roomId);
-                    WebRTCRoom newRoom = new WebRTCRoom(roomId, kurento.createMediaPipeline());
+                    WebRTCRoom newRoom = new WebRTCRoom(roomId, kurento.createMediaPipeline(), userRepository);
                     rooms.put(roomId, newRoom);
 
                     return newRoom;

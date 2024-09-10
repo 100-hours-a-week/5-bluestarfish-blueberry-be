@@ -26,6 +26,7 @@ public class UserRoomRequest {
     private boolean speakerEnabled;
     private Time goalTime;
     private Time dayTime;
+    private String password;
 
     public UserRoom toEntity(User user, Room room) {
         return UserRoom.builder()

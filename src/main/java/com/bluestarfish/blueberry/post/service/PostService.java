@@ -7,9 +7,9 @@ import com.bluestarfish.blueberry.post.enumeration.PostType;
 import org.springframework.data.domain.Page;
 
 public interface PostService {
-    void createPost(PostRequest postRequest);
+    void createPost(PostRequest postRequest, String accessToken);
     PostResponse getPostById(Long id);
     Page<PostResponse> getAllPosts(int page, PostType postType, boolean isRecruited);
-    void updatePostById(Long id, PostRequest postRequest);
-    void deletePostById(Long id);
+    void updatePostById(Long id, PostRequest postRequest, String accessToken);
+    void deletePostById(Long id, String accessToken);
 }
