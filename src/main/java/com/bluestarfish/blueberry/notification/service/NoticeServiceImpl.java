@@ -16,11 +16,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @Service
+@Slf4j
 public class NoticeServiceImpl implements NoticeService {
 
     private final UserRepository userRepository;
@@ -42,7 +44,7 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public SseEmitter subscribe(Long userId) {
 
-        SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
+        SseEmitter emitter = new SseEmitter(3600L * 1000L);
         clientEmitters.put(userId, emitter);
 
         emitter.onCompletion(() -> clientEmitters.remove(userId));
@@ -53,42 +55,43 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     public Notification sendNotice(Long userId, NoticeDto noticeDto) {
+        User sender = userRepository.findById(userId)
+                .orElseThrow(() -> new UserException("User id " + userId + " not found", HttpStatus.NOT_FOUND));
+        User receiver = userRepository.findById(noticeDto.getReceiverId())
+                .orElseThrow(() -> new UserException("Receiver Id " + noticeDto.getReceiverId() + " not found",
+                        HttpStatus.NOT_FOUND));
+
+        Comment comment = (noticeDto.getCommentId() != null)
+                ? commentRepository.findById(noticeDto.getCommentId()).orElse(null)
+                : null;
+
+        Room room = (noticeDto.getRoomId() != null)
+                ? roomRepository.findById(noticeDto.getRoomId()).orElse(null)
+                : null;
+
+        Notification notification = Notification.builder()
+                .sender(sender)
+                .receiver(receiver)
+                .notiType(noticeDto.getNotiType())
+                .notiStatus(noticeDto.getNotiStatus())
+                .comment(comment)
+                .room(room)
+                .build();
+
+        Notification savedNotification = notificationRepository.save(notification);
+
         SseEmitter emitter = clientEmitters.get(noticeDto.getReceiverId());
         if (emitter != null) {
             try {
-                User sender = userRepository.findById(userId)
-                        .orElseThrow(() -> new UserException("User id " + userId + " not found", HttpStatus.NOT_FOUND));
-                User receiver = userRepository.findById(noticeDto.getReceiverId())
-                        .orElseThrow(() -> new UserException(
-                                "Receiver Id" + noticeDto.getReceiverId() + " not found", HttpStatus.NOT_FOUND));
-                Comment comment =
-                        noticeDto.getCommentId() != null ? commentRepository.findById(noticeDto.getCommentId())
-                                .orElse(null) : null;
-                Room room = noticeDto.getRoomId() != null ? roomRepository.findById(noticeDto.getRoomId()).orElse(null)
-                        : null;
-
-                Notification notification = Notification.builder()
-                        .sender(sender)
-                        .receiver(receiver)
-                        .notiType(noticeDto.getNotiType())
-                        .notiStatus(noticeDto.getNotiStatus())
-                        .comment(comment)
-                        .room(room)
-                        .build();
-
-                Notification savedNotification = notificationRepository.save(notification);
-
-                // SSE로 알림 전송 (저장된 알림 정보 전송)
                 emitter.send(SseEmitter.event().name("notification").data(savedNotification));
-
-                return savedNotification;
-
             } catch (IOException e) {
                 clientEmitters.remove(noticeDto.getReceiverId());
+                log.error("Error send notice " + e.getMessage(), e);
             }
+        } else {
+            log.info("User is not online");
         }
-
-        return null;
+        return savedNotification;
     }
 
 

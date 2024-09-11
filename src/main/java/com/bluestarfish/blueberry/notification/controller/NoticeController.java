@@ -37,7 +37,7 @@ public class NoticeController {
     }
 
     // 알림 전송 처리
-    @PostMapping("/{userId}/notifications")
+    @PostMapping(value = "/{userId}/notifications")
     public ApiSuccessResponse<?> sendInviteNotification(@PathVariable(value = "userId") Long userId,
                                                         @RequestBody NoticeDto noticeDto) {
 
