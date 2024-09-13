@@ -59,15 +59,35 @@ public class KurentoHandler extends TextWebSocketHandler {
             case IS_MIC_ON:
                 isMicOn(jsonMessage, userSession);
                 break;
+            case PING_PONG:
+                pingPong(jsonMessage, userSession);
             default:
                 break;
         }
     }
 
-    private void isCamOn(
+    private void pingPong(
             JsonObject jsonMessage,
             UserSession userSession
     ) throws IOException {
+        if (jsonMessage.get(MESSAGE).getAsString().equals(PING_PONG_QUESTION)) {
+            log.info("핑 도착");
+
+            JsonObject pongMessage = new JsonObject();
+            pongMessage.addProperty(SOCKET_MESSAGE_ID, PING_PONG);
+            pongMessage.addProperty(MESSAGE, PING_PONG_ANSWER);
+            userSession.sendMessage(pongMessage);
+
+            return;
+        }
+
+        log.error("핑 메시지 에러: {}", jsonMessage);
+    }
+
+    private void isCamOn(
+            JsonObject jsonMessage,
+            UserSession userSession
+    ) {
         WebRTCRoom webRTCRoom = webRTCRoomManager.getRoom(
                 userSession.getRoomName()
         );
@@ -77,7 +97,7 @@ public class KurentoHandler extends TextWebSocketHandler {
     private void isMicOn(
             JsonObject jsonMessage,
             UserSession userSession
-    ) throws IOException {
+    ) {
         WebRTCRoom webRTCRoom = webRTCRoomManager.getRoom(
                 userSession.getRoomName()
         );
@@ -162,7 +182,7 @@ public class KurentoHandler extends TextWebSocketHandler {
     private UserSession tryToJoinRoom(JsonObject jsonMessage, WebSocketSession webSocketSession) throws IOException {
         return webRTCRoomManager
                 .getRoom(extractRoomId(jsonMessage))
-                .join(extractName(jsonMessage), webSocketSession);
+                .join(jsonMessage, webSocketSession);
     }
 
     private String extractName(JsonObject jsonMessage) {

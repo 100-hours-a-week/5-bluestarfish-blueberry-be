@@ -1,14 +1,11 @@
 package com.bluestarfish.blueberry.webrtc;
 
-import com.bluestarfish.blueberry.user.entity.User;
-import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.*;
 import org.kurento.jsonrpc.JsonUtils;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -26,28 +23,38 @@ public class UserSession implements Closeable {
     private final Long userId;
     private final String name;
     private final String profileImage;
+    private final String roomName;
+    private final boolean camEnabled;
+    private final boolean micEnabled;
+    private final boolean speakerEnabled;
+
+
     private final WebSocketSession session;
     private final MediaPipeline pipeline;
-    private final String roomName;
     private final WebRtcEndpoint outgoingMedia;
     private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
     private final UserRepository userRepository;
 
     public UserSession(
-            Long userId,
-            String name,
-            String profileImage,
-            String roomName,
+            JsonObject jsonMessage,
             WebSocketSession session,
             MediaPipeline pipeline,
             UserRepository userRepository
     ) {
-        this.userId = userId;
-        this.name = name;
-        this.profileImage = profileImage;
+        this.userId = jsonMessage.get("userId").getAsLong();
+        this.name = jsonMessage.get("name").getAsString();
+        if (!jsonMessage.get("profileImage").isJsonNull()) {
+            this.profileImage = jsonMessage.get("profileImage").getAsString();
+        } else {
+            this.profileImage = null;
+        }
+        this.roomName = jsonMessage.get("room").getAsString();
+        this.camEnabled = jsonMessage.get("camEnabled").getAsBoolean();
+        this.micEnabled = jsonMessage.get("micEnabled").getAsBoolean();
+        this.speakerEnabled = jsonMessage.get("speakerEnabled").getAsBoolean();
+
         this.pipeline = pipeline;
         this.session = session;
-        this.roomName = roomName;
         this.userRepository = userRepository;
         this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline).build();
 
@@ -68,6 +75,8 @@ public class UserSession implements Closeable {
                 }
             }
         });
+
+
     }
 
     public WebRtcEndpoint getOutgoingWebRtcPeer() {
@@ -80,16 +89,16 @@ public class UserSession implements Closeable {
     ) throws IOException {
         log.info("'{}'번 방 FROM '{}' TO '{}' offer 도착", roomName, sender.getName(), name);
         log.info("'{}' SDP Offer: {}", sender.getName(), sdpOffer);
-        User user = userRepository.findByNicknameAndDeletedAtIsNull(sender.getName()).orElseThrow(
-                () -> new UserException("", HttpStatus.NOT_FOUND)
-        );
 
         String ipSdpAnswer = getEndpointForUser(sender).processOffer(sdpOffer);
         JsonObject scParams = new JsonObject();
         scParams.addProperty(SOCKET_MESSAGE_ID, RECEIVE_VIDEO_ANSWER);
-        scParams.addProperty("userId", user.getId());
-        scParams.addProperty("profileImage", user.getProfileImage());
+        scParams.addProperty("userId", sender.getUserId());
         scParams.addProperty(NAME, sender.getName());
+        scParams.addProperty("profileImage", sender.getProfileImage());
+        scParams.addProperty("camEnabled", sender.isCamEnabled());
+        scParams.addProperty("micEnabled", sender.isMicEnabled());
+        scParams.addProperty("speakerEnabled", sender.isSpeakerEnabled());
         scParams.addProperty(SDP_ANSWER, ipSdpAnswer);
 
         sendMessage(scParams);
