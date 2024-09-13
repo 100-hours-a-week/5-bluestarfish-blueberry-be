@@ -5,6 +5,7 @@ import com.bluestarfish.blueberry.common.handler.ResponseHandler;
 import com.bluestarfish.blueberry.notification.dto.NoticeDto;
 import com.bluestarfish.blueberry.notification.entity.Notification;
 import com.bluestarfish.blueberry.notification.service.NoticeService;
+import com.bluestarfish.blueberry.user.dto.UserResponse;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -67,4 +68,14 @@ public class NoticeController {
         noticeService.deleteNotification(noticeId);
         return ResponseHandler.handleSuccessResponse("Delete Success", HttpStatus.OK);
     }
+
+    @GetMapping("/friends/{userId}")
+    public ApiSuccessResponse<?> getFriendsList(
+            @PathVariable("userId") Long userId
+    ) {
+        List<UserResponse> userResponses = noticeService.getFriendsList(userId);
+        return ResponseHandler.handleSuccessResponse(userResponses, HttpStatus.OK);
+    }
+
+
 }
