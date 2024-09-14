@@ -18,7 +18,7 @@ public class RTCMessage {
     public static final String ROOM = "room";
     public static final String NEW_PARTICIPANT_ARRIVED = "newParticipantArrived";
     public static final String PARTICIPANT_LEFT = "participantLeft";
-    public static final String EXISTING_PATICIPANTS = "existingParticipants";
+    public static final String EXISTING_PARTICIPANTS = "existingParticipants";
     public static final String DATA = "data";
     public static final String ICE_CANDIDATE = "iceCandidate";
     public static final String RECEIVE_VIDEO_ANSWER = "receiveVideoAnswer";
