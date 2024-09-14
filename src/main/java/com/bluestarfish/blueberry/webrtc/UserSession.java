@@ -28,7 +28,6 @@ public class UserSession implements Closeable {
     private final boolean micEnabled;
     private final boolean speakerEnabled;
 
-
     private final WebSocketSession session;
     private final MediaPipeline pipeline;
     private final WebRtcEndpoint outgoingMedia;
