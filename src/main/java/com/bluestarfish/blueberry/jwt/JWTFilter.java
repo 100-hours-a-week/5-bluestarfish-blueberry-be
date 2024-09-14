@@ -81,6 +81,7 @@ public class JWTFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
+
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
         if (excludedUrls.containsKey(requestUri) && excludedUrls.get(requestUri).contains(method)) {
@@ -88,7 +89,7 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        System.out.println(requestUri);
+        log.debug("요청 URI => {}", requestUri);
 
         if (requestUri.contains("login")) {
             filterChain.doFilter(request, response);

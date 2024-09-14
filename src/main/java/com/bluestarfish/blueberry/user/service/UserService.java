@@ -24,5 +24,7 @@ public interface UserService {
 
     void updateStudyTime(Long userId, StudyTimeUpdateRequest studyTimeUpdateRequest);
 
-    List<Rank> getRanks(Long userId);
+    List<RankResponse> getRanks(Long userId);
+
+    List<FoundUserResponse> searchUsers(String accessToken, String keyword);
 }
