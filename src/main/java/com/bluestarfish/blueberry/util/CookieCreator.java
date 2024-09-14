@@ -19,4 +19,12 @@ public class CookieCreator {
 
         return accessTokenCookie;
     }
+
+    public static Cookie removeAuthCookie() {
+        Cookie cookie = new Cookie(AUTH_KEY, null);
+        cookie.setMaxAge(0);
+        cookie.setPath(AUTH_PATH);
+
+        return cookie;
+    }
 }

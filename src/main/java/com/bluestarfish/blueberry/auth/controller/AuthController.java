@@ -6,7 +6,6 @@ import com.bluestarfish.blueberry.auth.dto.MailAuthRequest;
 import com.bluestarfish.blueberry.auth.dto.MailRequest;
 import com.bluestarfish.blueberry.auth.service.AuthService;
 import com.bluestarfish.blueberry.common.dto.ApiSuccessResponse;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
 import static com.bluestarfish.blueberry.util.CookieCreator.createAuthCookie;
+import static com.bluestarfish.blueberry.util.CookieCreator.removeAuthCookie;
 
 @RestController
 @RequiredArgsConstructor
@@ -38,13 +38,9 @@ public class AuthController {
             @CookieValue("Authorization") String accessToken,
             HttpServletResponse response
     ) {
-        Cookie cookie = new Cookie("Authorization", null);
-        cookie.setMaxAge(0);
-        cookie.setPath("/");
-        response.addCookie(cookie);
-
-
         authService.logout(accessToken);
+        response.addCookie(removeAuthCookie());
+        
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
@@ -60,8 +56,6 @@ public class AuthController {
     public ApiSuccessResponse<?> authenticateCode(
             MailAuthRequest mailAuthRequest
     ) {
-        System.out.println("mailAuthRequest = " + mailAuthRequest.getEmail());
-        System.out.println("mailAuthRequest = " + mailAuthRequest.getCode());
         authService.authenticateCode(mailAuthRequest);
         return handleSuccessResponse(HttpStatus.OK);
     }
