@@ -12,10 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
 import static com.bluestarfish.blueberry.common.handler.ResponseHandler.handleSuccessResponse;
+import static com.bluestarfish.blueberry.util.CookieCreator.createAuthCookie;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,16 +26,9 @@ public class AuthController {
     public ApiSuccessResponse<?> login(
             @RequestBody LoginRequest loginRequest,
             HttpServletResponse response
-    ) throws UnsupportedEncodingException {
-
+    ) {
         LoginSuccessResult loginSuccessResult = authService.login(loginRequest);
-
-        Cookie accessTokenCookie = new Cookie("Authorization", URLEncoder.encode(loginSuccessResult.getAccessToken(), "UTF-8"));
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setSecure(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(60 * 60 * 24);
-        response.addCookie(accessTokenCookie);
+        response.addCookie(createAuthCookie(loginSuccessResult.getAccessToken()));
 
         return handleSuccessResponse(HttpStatus.OK);
     }
