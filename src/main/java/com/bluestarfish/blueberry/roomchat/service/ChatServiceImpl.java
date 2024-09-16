@@ -6,7 +6,6 @@ import com.bluestarfish.blueberry.roomchat.repository.ChatRepository;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import java.util.List;
-import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -30,20 +29,21 @@ public class ChatServiceImpl implements ChatService {
                 .message(chatDto.getMessage())
                 .build();
 
-        Optional<User> chatUser = userRepository.findById(chatDto.getSenderId());
+        User chatUser = userRepository.findById(chatDto.getSenderId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
         Chat savedChat = chatRepository.save(chat);
 
-        //FIXME : chatuser 체크
-        return ChatDto.from(savedChat, chatUser.get());
+        return ChatDto.from(savedChat, chatUser);
     }
 
     @Override
     public List<ChatDto> listChats(Long roomId) {
         return chatRepository.findAllByRoomId(roomId).stream()
                 .map(chat -> {
-                    Optional<User> chatUser = userRepository.findById(chat.getSenderId());
-                    return ChatDto.from(chat, chatUser.get());
+                    User chatUser = userRepository.findById(chat.getSenderId())
+                            .orElseThrow(() -> new RuntimeException("User not found"));
+                    return ChatDto.from(chat, chatUser);
                 })
                 .toList();
     }
