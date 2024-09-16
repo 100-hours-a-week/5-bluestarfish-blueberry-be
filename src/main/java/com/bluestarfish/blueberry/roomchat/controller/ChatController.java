@@ -7,7 +7,6 @@ import com.bluestarfish.blueberry.roomchat.service.ChatService;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.http.HttpStatus;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -28,7 +27,6 @@ public class ChatController {
     private final ChatService chatService;
     private final SimpMessagingTemplate simpMessagingTemplate;
 
-    @Autowired
     public ChatController(ChatService chatService, SimpMessagingTemplate simpMessagingTemplate) {
         this.chatService = chatService;
         this.simpMessagingTemplate = simpMessagingTemplate;

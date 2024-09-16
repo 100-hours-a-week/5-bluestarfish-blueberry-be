@@ -4,6 +4,7 @@ import lombok.Getter;
 
 @Getter
 public enum NotiStatus {
+    CONNECTED("CONNECTED"),
     PENDING("PENDING"),
     ACCEPTED("ACCEPTED"),
     DECLINED("DECLINED");

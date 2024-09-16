@@ -34,6 +34,7 @@ public class ChatServiceImpl implements ChatService {
 
         Chat savedChat = chatRepository.save(chat);
 
+        //FIXME : chatuser 체크
         return ChatDto.from(savedChat, chatUser.get());
     }
 

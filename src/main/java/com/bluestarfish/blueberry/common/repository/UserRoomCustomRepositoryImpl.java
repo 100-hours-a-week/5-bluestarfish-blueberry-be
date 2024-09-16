@@ -14,6 +14,7 @@ public class UserRoomCustomRepositoryImpl implements UserRoomCustomRepository {
 
     private final JPAQueryFactory jpaQueryFactory;
 
+    //FIXME : 삭제
     @Override
     public List<User> findActiveUsersByRoomId(Long roomId) {
         QUserRoom userRoom = QUserRoom.userRoom;
