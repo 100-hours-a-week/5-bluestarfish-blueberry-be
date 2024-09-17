@@ -18,6 +18,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class NoticeDto {
     private Long id;
+    private Long senderId;
     private Long receiverId;
     private NotiType notiType;
     private NotiStatus notiStatus;
@@ -30,6 +31,7 @@ public class NoticeDto {
     public static NoticeDto from(Notification notification) {
         return NoticeDto.builder()
                 .id(notification.getId())
+                .senderId(notification.getSender().getId())
                 .receiverId(notification.getReceiver().getId())
                 .notiType(notification.getNotiType())
                 .notiStatus(notification.getNotiStatus())
