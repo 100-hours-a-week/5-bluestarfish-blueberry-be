@@ -48,27 +48,26 @@ public class WebRTCRoom implements Closeable {
         this.close();
     }
 
-    public UserSession join(String userName, WebSocketSession session) throws IOException {
-        UserSession participant = createNewParticipant(userName, session);
+    public UserSession join(JsonObject jsonMessage, WebSocketSession session) throws IOException {
+        UserSession participant = createNewParticipant(jsonMessage, session);
         joinRoom(participant);
         participants.put(participant.getName(), participant);
         sendParticipantNames(participant);
 
-        log.info("'{}'번 방: '{}' 참가", roomId, userName);
+        log.info("'{}'번 방: '{}' 참가", roomId, jsonMessage.get(NAME).getAsString());
+
         return participant;
     }
 
-    private UserSession createNewParticipant(String userName, WebSocketSession session) {
-        User user = userRepository.findByNicknameAndDeletedAtIsNull(userName)
+    private UserSession createNewParticipant(JsonObject jsonMessage, WebSocketSession session) {
+        User user = userRepository.findById(jsonMessage.get("userId").getAsLong())
                 .orElseThrow(
                         () -> new UserException("", HttpStatus.NOT_FOUND)
                 );
+        jsonMessage.addProperty("profileImage", user.getProfileImage());
 
         return new UserSession(
-                user.getId(),
-                userName,
-                user.getProfileImage(),
-                roomId,
+                jsonMessage,
                 session,
                 pipeline,
                 userRepository
@@ -104,6 +103,10 @@ public class WebRTCRoom implements Closeable {
         newParticipantMsg.addProperty(NAME, newParticipant.getName());
         newParticipantMsg.addProperty("userId", user.getId());
         newParticipantMsg.addProperty("profileImage", user.getProfileImage());
+        newParticipantMsg.addProperty("camEnabled", newParticipant.isCamEnabled());
+        newParticipantMsg.addProperty("micEnabled", newParticipant.isMicEnabled());
+        newParticipantMsg.addProperty("speakerEnabled", newParticipant.isSpeakerEnabled());
+
 
         return newParticipantMsg;
     }
@@ -128,7 +131,7 @@ public class WebRTCRoom implements Closeable {
 
     public void sendParticipantNames(UserSession user) throws IOException {
         JsonObject existingParticipantsMsg = new JsonObject();
-        existingParticipantsMsg.addProperty(SOCKET_MESSAGE_ID, EXISTING_PATICIPANTS);
+        existingParticipantsMsg.addProperty(SOCKET_MESSAGE_ID, EXISTING_PARTICIPANTS);
         existingParticipantsMsg.add(
                 DATA,
                 getParticipants().stream()

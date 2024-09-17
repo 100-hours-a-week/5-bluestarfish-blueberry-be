@@ -4,6 +4,8 @@ import com.bluestarfish.blueberry.post.entity.Post;
 import com.bluestarfish.blueberry.post.enumeration.PostType;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.user.entity.User;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -19,8 +21,15 @@ public class PostRequest {
     private Long id;
     private Long userId;
     private Long roomId;
+
+    @NotBlank(message = "Title must not be blank")
+    @Size(min = 5, max = 20, message = "Title must be between 5 and 20 characters")
     private String title;
+
+    @NotBlank(message = "Content must not be blank")
+    @Size(min = 5, max = 200, message = "Content must be between 5 and 200 characters")
     private String content;
+
     private PostType type;
     private Boolean isRecruited;
     private boolean postCamEnabled;

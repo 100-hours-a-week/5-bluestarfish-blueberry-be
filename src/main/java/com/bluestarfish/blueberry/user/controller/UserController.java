@@ -80,15 +80,13 @@ public class UserController {
         userService.resetPassword(passwordResetRequest, accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
-
-
-    // TODO: 친구추가 기능개발완료되면 API 작성
+    
     @GetMapping
     public ApiSuccessResponse<?> findUsersByNickname(
             @CookieValue("Authorization") String accessToken,
             @RequestParam("keyword") String keyword
     ) {
-        return handleSuccessResponse(null, HttpStatus.OK);
+        return handleSuccessResponse(userService.searchUsers(accessToken, keyword), HttpStatus.OK);
     }
 
     @GetMapping("/{userId}/time")
@@ -116,7 +114,7 @@ public class UserController {
 
     @GetMapping("/my/chart/{userId}")
     public ApiSuccessResponse<?> getChartData(
-        @PathVariable("userId") Long userId
+            @PathVariable("userId") Long userId
     ) {
         return handleSuccessResponse(studyTimeService.getChartData(userId), HttpStatus.OK);
     }

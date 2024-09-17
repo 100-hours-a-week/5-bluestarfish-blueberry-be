@@ -66,4 +66,6 @@ public class CustomStudyTimeRepositoryImpl implements CustomStudyTimeRepository 
                         .and(qStudyTime.date.between(startDate, endDate)))
                 .fetch();
     }
+
+
 }
