@@ -38,6 +38,7 @@ public class CommentServiceImpl implements CommentService {
 
         Post post = postRepository.findById(commentRequest.getPostId())
                 .orElseThrow(() -> new CommentException("Post not found with id: " + commentRequest.getPostId(), HttpStatus.NOT_FOUND));
+        // FIXME : 이거 내리자~
         User user = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getUserId())
                 .orElseThrow(() -> new CommentException("User not found with id: " + commentRequest.getUserId(), HttpStatus.NOT_FOUND));
 
@@ -65,15 +66,15 @@ public class CommentServiceImpl implements CommentService {
     public void deleteCommentById(Long postId, Long commentId, String accessToken) {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
-        User user = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new CommentException("Post not found with id: " + postId, HttpStatus.NOT_FOUND)).getUser();
+        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
+                .orElseThrow(() -> new CommentException("Comment not found with id: " + commentId, HttpStatus.NOT_FOUND));
+
+        User user = comment.getUser();
 
         if(!tokenId.equals(user.getId())) {
             throw new CommentException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
         }
 
-        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
-                .orElseThrow(() -> new CommentException("Comment not found with id: " + commentId, HttpStatus.NOT_FOUND));
         comment.setDeletedAt(LocalDateTime.now());
     }
 }
