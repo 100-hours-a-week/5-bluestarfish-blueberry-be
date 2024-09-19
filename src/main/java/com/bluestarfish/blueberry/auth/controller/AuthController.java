@@ -24,8 +24,6 @@ public class AuthController {
 
     private final AuthService authService;
 
-    // FIXME: 어세스토큰만 쿠키에 담고 userId 요청하는 API 추가
-
     @PostMapping("/login")
     public ApiSuccessResponse<?> login(
             @RequestBody LoginRequest loginRequest,
@@ -44,18 +42,17 @@ public class AuthController {
         return handleSuccessResponse(HttpStatus.OK);
     }
 
-    // FIXME: 인증 쿠키 만료, 리프레쉬 토큰만료
-
     @PostMapping("/logout")
     public ApiSuccessResponse<?> logout(
             @CookieValue("Authorization") String accessToken,
             HttpServletResponse response
     ) {
-        Cookie cookie = new Cookie("Authorization", null); // 쿠키의 값을 null로 설정
+        Cookie cookie = new Cookie("Authorization", null);
         cookie.setMaxAge(0);
         cookie.setPath("/");
         response.addCookie(cookie);
-        
+
+
         authService.logout(accessToken);
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
