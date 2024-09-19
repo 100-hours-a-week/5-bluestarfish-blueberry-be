@@ -33,7 +33,7 @@ public class CommentServiceImpl implements CommentService {
     private final JWTUtils jwtUtils;
 
     @Override
-    public void createComment(CommentRequest commentRequest, String accessToken) {
+    public CommentResponse createComment(CommentRequest commentRequest, String accessToken) {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
         Post post = postRepository.findById(commentRequest.getPostId())
@@ -48,10 +48,9 @@ public class CommentServiceImpl implements CommentService {
         if(commentRequest.getMentionId() != null) {
             User mentionedUser = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getMentionId())
                     .orElseThrow(() -> new CommentException("Mentioned User not found with id: " + commentRequest.getUserId(), HttpStatus.NOT_FOUND));
-            commentRepository.save(commentRequest.toEntity(post, user, mentionedUser));
-            return;
+            return CommentResponse.from(commentRepository.save(commentRequest.toEntity(post, user, mentionedUser)));
         }
-        commentRepository.save(commentRequest.toEntity(post, user));
+        return CommentResponse.from(commentRepository.save(commentRequest.toEntity(post, user)));
     }
 
     @Override

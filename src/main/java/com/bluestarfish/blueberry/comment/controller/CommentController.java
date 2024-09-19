@@ -29,8 +29,7 @@ public class CommentController {
             @RequestBody CommentRequest commentRequest,
             @CookieValue(name = "Authorization") String accessToken
     ) {
-        commentService.createComment(commentRequest, accessToken);
-        return handleSuccessResponse(HttpStatus.CREATED);
+        return handleSuccessResponse(commentService.createComment(commentRequest, accessToken), HttpStatus.CREATED);
     }
 
     @GetMapping("/{postId}")
