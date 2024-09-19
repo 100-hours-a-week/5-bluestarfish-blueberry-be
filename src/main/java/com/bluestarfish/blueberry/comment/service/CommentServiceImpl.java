@@ -38,7 +38,6 @@ public class CommentServiceImpl implements CommentService {
 
         Post post = postRepository.findById(commentRequest.getPostId())
                 .orElseThrow(() -> new CommentException("Post not found with id: " + commentRequest.getPostId(), HttpStatus.NOT_FOUND));
-        
         User user = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getUserId())
                 .orElseThrow(() -> new CommentException("User not found with id: " + commentRequest.getUserId(), HttpStatus.NOT_FOUND));
 
