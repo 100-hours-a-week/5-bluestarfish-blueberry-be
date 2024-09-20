@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.util.List;
 
@@ -23,12 +24,12 @@ public class NoticeController {
         this.noticeService = noticeService;
     }
 
-    // SSE 구독 요청 처리: 사용자가 알림을 구독할 때 호출되는 엔드포인트
-//    @GetMapping("x{userId}")
-//    public SseEmitter subscribe(@PathVariable(value = "userId") Long userId) {
-//
-//        return noticeService.subscribe(userId);
-//    }
+    //     SSE 구독 요청 처리: 사용자가 알림을 구독할 때 호출되는 엔드포인트
+    @GetMapping("x{userId}")
+    public SseEmitter subscribe(@PathVariable(value = "userId") Long userId) {
+
+        return noticeService.subscribe(userId);
+    }
 
     // 알림 전송 처리
     @PostMapping("/{userId}/notifications")
