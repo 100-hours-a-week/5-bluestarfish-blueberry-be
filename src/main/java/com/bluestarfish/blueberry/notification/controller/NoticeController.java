@@ -5,9 +5,6 @@ import com.bluestarfish.blueberry.common.handler.ResponseHandler;
 import com.bluestarfish.blueberry.notification.dto.NoticeDto;
 import com.bluestarfish.blueberry.notification.entity.Notification;
 import com.bluestarfish.blueberry.notification.service.NoticeService;
-
-import org.springframework.beans.factory.annotation.Autowired;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -25,7 +22,7 @@ public class NoticeController {
     }
 
     //     SSE 구독 요청 처리: 사용자가 알림을 구독할 때 호출되는 엔드포인트
-    @GetMapping("x{userId}")
+    @GetMapping("/notifications/subscribe/{userId}")
     public SseEmitter subscribe(@PathVariable(value = "userId") Long userId) {
 
         return noticeService.subscribe(userId);
