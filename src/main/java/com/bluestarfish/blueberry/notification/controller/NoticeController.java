@@ -5,7 +5,9 @@ import com.bluestarfish.blueberry.common.handler.ResponseHandler;
 import com.bluestarfish.blueberry.notification.dto.NoticeDto;
 import com.bluestarfish.blueberry.notification.entity.Notification;
 import com.bluestarfish.blueberry.notification.service.NoticeService;
+
 import org.springframework.beans.factory.annotation.Autowired;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +19,6 @@ public class NoticeController {
 
     private final NoticeService noticeService;
 
-    @Autowired
     public NoticeController(NoticeService noticeService) {
         this.noticeService = noticeService;
     }
@@ -30,7 +31,7 @@ public class NoticeController {
 //    }
 
     // 알림 전송 처리
-    @PostMapping(value = "/{userId}/notifications")
+    @PostMapping("/{userId}/notifications")
     public ApiSuccessResponse<?> sendInviteNotification(@PathVariable(value = "userId") Long userId,
                                                         @RequestBody NoticeDto noticeDto) {
 
@@ -50,7 +51,7 @@ public class NoticeController {
 
     @GetMapping("/{userId}/notifications")
     public ApiSuccessResponse<?> getNotifications(@PathVariable(value = "userId") Long userId) {
-        List<NoticeDto> notifications = noticeService.listNotifications(userId);
+        List<Notification> notifications = noticeService.listNotifications(userId);
         return ResponseHandler.handleSuccessResponse(notifications, HttpStatus.OK);
     }
 
