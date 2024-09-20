@@ -120,12 +120,7 @@ public class NoticeServiceImpl implements NoticeService {
 
     @Override
     public List<Notification> listNotifications(Long userId) {
-
-        List<Notification> notifications = notificationRepository.findByReceiverIdAndDeletedAtIsNull(userId);
-
-        return notifications.stream()
-                .map(NoticeDto::from)
-                .toList();
+        return notificationRepository.findByReceiverIdAndDeletedAtIsNull(userId);
     }
 
     @Override
