@@ -15,5 +15,5 @@ public interface NoticeService {
 
     void deleteNotification(Long noticeId);
 
-    List<NoticeDto> listNotifications(Long userId);
+    List<Notification> listNotifications(Long userId);
 }
