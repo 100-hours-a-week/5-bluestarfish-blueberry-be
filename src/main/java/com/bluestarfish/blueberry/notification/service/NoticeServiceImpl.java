@@ -119,7 +119,7 @@ public class NoticeServiceImpl implements NoticeService {
     }
 
     @Override
-    public List<NoticeDto> listNotifications(Long userId) {
+    public List<Notification> listNotifications(Long userId) {
 
         List<Notification> notifications = notificationRepository.findByReceiverIdAndDeletedAtIsNull(userId);
 
