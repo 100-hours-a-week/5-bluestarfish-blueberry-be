@@ -150,6 +150,7 @@ public class UserServiceImpl implements UserService {
                 });
     }
 
+    // FIXME: 메일인증 되었는지 확인하는 로직 추가
     @Override
     public void resetPassword(PasswordResetRequest passwordResetRequest, String accessToken) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(passwordResetRequest.getEmail())
@@ -201,7 +202,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<Rank> getRanks(Long userId) {
+    public List<RankResponse> getRanks(Long userId) {
         userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
                 () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
         );
@@ -210,8 +211,8 @@ public class UserServiceImpl implements UserService {
 
         AtomicInteger order = new AtomicInteger(1);
 
-        List<Rank> ranks = studyTimes.stream()
-                .map(studyTime -> Rank.builder()
+        List<RankResponse> ranks = studyTimes.stream()
+                .map(studyTime -> RankResponse.builder()
                         .rank(order.getAndIncrement())
                         .nickname(studyTime.getUser().getNickname())
                         .time(studyTime.getTime())
@@ -223,7 +224,7 @@ public class UserServiceImpl implements UserService {
         for (StudyTime studyTime : studyTimes) {
             if (studyTime.getUser().getId().equals(userId)) {
                 ranks.add(
-                        Rank.builder()
+                        RankResponse.builder()
                                 .rank(studyTimes.indexOf(studyTime) + 1)
                                 .nickname(studyTime.getUser().getNickname())
                                 .time(studyTime.getTime())
@@ -233,5 +234,13 @@ public class UserServiceImpl implements UserService {
         }
 
         return ranks;
+    }
+
+    @Override
+    public List<FoundUserResponse> searchUsers(String accessToken, String keyword) {
+        Long userId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
+        List<FoundUserResponse> foundUsers = userRepository.findUsersByNickname(userId, keyword);
+
+        return foundUsers;
     }
 }

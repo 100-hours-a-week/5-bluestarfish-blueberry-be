@@ -15,8 +15,8 @@ public interface NoticeService {
     Notification updateNotificationStatus(Long userId, Long noticeId, NoticeDto noticeDto);
 
     void deleteNotification(Long noticeId);
-
-    List<NoticeDto> listNotifications(Long userId);
+  
+    List<Notification> listNotifications(Long userId);
 
     List<UserResponse> getFriendsList(Long userId);
 }
