@@ -84,6 +84,12 @@ public class JWTFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
+        //FIXME: 임시 필터해제
+        if (true) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         if (excludedUrls.containsKey(requestUri) && excludedUrls.get(requestUri).contains(method)) {
             filterChain.doFilter(request, response);
             return;
