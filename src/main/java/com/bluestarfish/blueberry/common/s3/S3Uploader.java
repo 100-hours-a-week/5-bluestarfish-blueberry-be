@@ -23,6 +23,7 @@ public class S3Uploader {
     private String bucket;
     private final AmazonS3 amazonS3;
 
+    // FIXME: 디스크 저장로직 확인 후 삭제
     public String upload(MultipartFile multipartFile, String dirName) {
         try {
             String originalFileName = multipartFile.getOriginalFilename();
