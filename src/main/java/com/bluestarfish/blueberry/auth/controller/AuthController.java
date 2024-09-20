@@ -35,12 +35,13 @@ public class AuthController {
 
     @PostMapping("/logout")
     public ApiSuccessResponse<?> logout(
+            // FIXME: 상수 공통으로 빼버리기
             @CookieValue("Authorization") String accessToken,
             HttpServletResponse response
     ) {
         authService.logout(accessToken);
         response.addCookie(removeAuthCookie());
-        
+
         return handleSuccessResponse(HttpStatus.NO_CONTENT);
     }
 
@@ -52,6 +53,7 @@ public class AuthController {
         return handleSuccessResponse(HttpStatus.CREATED);
     }
 
+    // FIXME: 쿼리파리미터를 어노테이션 없이 바디에 걸리는것이 가독성 다운?? 이후 생각
     @GetMapping("/mail")
     public ApiSuccessResponse<?> authenticateCode(
             MailAuthRequest mailAuthRequest

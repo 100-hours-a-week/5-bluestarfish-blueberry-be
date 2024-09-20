@@ -62,12 +62,14 @@ public class AuthServiceImpl implements AuthService {
                         .build()
         );
 
+        // FIXME: 유저아이디 불필요해보임
         return LoginSuccessResult.builder()
                 .userId(user.getId())
                 .accessToken(jwtTokens.accessToken())
                 .build();
     }
 
+    // FIXME: 디코더 두번 사용함 ㄷㄷ
     @Override
     public void logout(String accessToken) {
         accessToken = URLDecoder.decode(accessToken, StandardCharsets.UTF_8);
@@ -85,6 +87,7 @@ public class AuthServiceImpl implements AuthService {
                     });
         }
 
+        // FIXME: 메일인증 전송 라이브러리 에러에서 400번대 응답코드, 메시지로 수정
         try {
             authCodeRepository.deleteByEmail(email);
             authCodeRepository.save(

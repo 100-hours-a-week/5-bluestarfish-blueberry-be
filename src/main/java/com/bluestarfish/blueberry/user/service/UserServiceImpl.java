@@ -150,6 +150,7 @@ public class UserServiceImpl implements UserService {
                 });
     }
 
+    // FIXME: 메일인증 되었는지 확인하는 로직 추가
     @Override
     public void resetPassword(PasswordResetRequest passwordResetRequest, String accessToken) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(passwordResetRequest.getEmail())
@@ -239,7 +240,6 @@ public class UserServiceImpl implements UserService {
     public List<FoundUserResponse> searchUsers(String accessToken, String keyword) {
         Long userId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
         List<FoundUserResponse> foundUsers = userRepository.findUsersByNickname(userId, keyword);
-
 
         return foundUsers;
     }
