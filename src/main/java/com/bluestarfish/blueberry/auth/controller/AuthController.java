@@ -1,7 +1,6 @@
 package com.bluestarfish.blueberry.auth.controller;
 
 import com.bluestarfish.blueberry.auth.dto.LoginRequest;
-import com.bluestarfish.blueberry.auth.dto.LoginSuccessResult;
 import com.bluestarfish.blueberry.auth.dto.MailAuthRequest;
 import com.bluestarfish.blueberry.auth.dto.MailRequest;
 import com.bluestarfish.blueberry.auth.service.AuthService;
@@ -27,15 +26,12 @@ public class AuthController {
             @RequestBody LoginRequest loginRequest,
             HttpServletResponse response
     ) {
-        LoginSuccessResult loginSuccessResult = authService.login(loginRequest);
-        response.addCookie(createAuthCookie(loginSuccessResult.getAccessToken()));
-
+        response.addCookie(createAuthCookie(authService.login(loginRequest).getAccessToken()));
         return handleSuccessResponse(HttpStatus.OK);
     }
 
     @PostMapping("/logout")
     public ApiSuccessResponse<?> logout(
-            // FIXME: 상수 공통으로 빼버리기
             @CookieValue("Authorization") String accessToken,
             HttpServletResponse response
     ) {
