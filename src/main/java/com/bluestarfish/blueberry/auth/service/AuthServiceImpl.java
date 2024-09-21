@@ -83,7 +83,7 @@ public class AuthServiceImpl implements AuthService {
         String email = mailRequest.getEmail();
 
         if (mailRequest.getType().equals(MailAuthType.JOIN.getType())) {
-            userRepository.findByEmail(email)
+            userRepository.findByEmailAndDeletedAtIsNull(email)
                     .ifPresent(user -> {
                         throw new AuthException("The email address already exists", HttpStatus.CONFLICT);
                     });
