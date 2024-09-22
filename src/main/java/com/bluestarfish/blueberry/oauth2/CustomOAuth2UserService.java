@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,32 +30,24 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(oAuth2UserRequest);
         KakaoResponse kakaoResponse = new KakaoResponse(oAuth2User.getAttributes());
-
         String email = kakaoResponse.getEmail(); // 식별자 붙인 이메일
+        Optional<User> foundUser = userRepository.findByEmail(email);
 
-        // 이메일 찾고 없으면 저장 및 조회
-        // 있으면 조회
-        // 중복이메일
-        User user = userRepository.findByEmail(email)
-                .orElse(
-                        userRepository.save(
-                                User.builder()
-                                        .email(email)
-                                        .authType(AuthType.KAKAO)
-                                        .build()
-                        )
-                );
+        User user = foundUser.get();
+        if (user == null) {
+            user = userRepository.save(
+                    User.builder()
+                            .email(email)
+                            .authType(AuthType.KAKAO)
+                            .build()
+            );
+        }
 
-        // 근데 얘랑 관련된 데이터 모두지워야하는데
-        // 단순 삭제하면 쿼리 안먹힐 수 도 있음
-        // 어떻게할지 정해야 함
-        // 현재 로직상에는 관련 FK 데이터 삭제가 이루어지지 않으므로 하드딜리트한 데이터 살리는 걸로 ㄱ
-        //
 
         if (user.getDeletedAt() != null) {
             userRepository.deleteById(user.getId());
             userRepository.flush();
-            userRepository.save(
+            user = userRepository.save(
                     User.builder()
                             .email(email)
                             .authType(AuthType.KAKAO)
