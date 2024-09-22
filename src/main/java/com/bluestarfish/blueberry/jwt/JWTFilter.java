@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.bluestarfish.blueberry.util.CookieCreator.removeAuthCookie;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -84,12 +86,12 @@ public class JWTFilter extends OncePerRequestFilter {
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
+        log.info("인가 요청 URI => {}", requestUri);
+
         if (excludedUrls.containsKey(requestUri) && excludedUrls.get(requestUri).contains(method)) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        log.info("인가 요청 URI => {}", requestUri);
 
         if (requestUri.contains("login")) {
             filterChain.doFilter(request, response);
@@ -121,9 +123,9 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             if (isExpired(authorization)) {
                 String refreshToken = findRefreshToken(userId).getToken();
-
-                // FIXME: 여기서 응답객체에 있는 어세스토큰 쿠키 지워줘야함
+                
                 if (isExpired(refreshToken)) {
+                    response.addCookie(removeAuthCookie());
                     discardRefreshToken(userId);
                     throw new AuthException("Refresh Token is expired", HttpStatus.UNAUTHORIZED);
                 }

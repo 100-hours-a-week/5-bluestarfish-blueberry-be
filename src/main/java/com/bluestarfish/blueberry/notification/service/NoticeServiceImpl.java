@@ -15,19 +15,16 @@ import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
-
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Service;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
-
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 
 @Service
@@ -150,7 +147,7 @@ public class NoticeServiceImpl implements NoticeService {
                         .orElseThrow(() -> new NotificationException("Notification not found", HttpStatus.NOT_FOUND));
 
                 notification.setNotiStatus(noticeDto.getNotiStatus());
-                
+
                 emitter.send(SseEmitter.event().name("notification").data(notification.getNotiStatus()));
 
                 return notification;

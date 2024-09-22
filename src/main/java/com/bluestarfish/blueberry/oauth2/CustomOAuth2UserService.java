@@ -33,6 +33,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         // 이메일 찾고 없으면 저장 및 조회
         // 있으면 조회
+        // 중복이메일
         User user = userRepository.findByEmailAndDeletedAtIsNull(email)
                 .orElseGet(() -> userRepository.save(
                         User.builder()
