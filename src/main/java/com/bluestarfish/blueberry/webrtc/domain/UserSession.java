@@ -1,4 +1,4 @@
-package com.bluestarfish.blueberry.webrtc;
+package com.bluestarfish.blueberry.webrtc.domain;
 
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.google.gson.JsonObject;

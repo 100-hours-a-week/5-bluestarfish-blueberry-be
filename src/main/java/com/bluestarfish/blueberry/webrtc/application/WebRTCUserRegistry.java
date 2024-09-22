@@ -1,5 +1,6 @@
-package com.bluestarfish.blueberry.webrtc;
+package com.bluestarfish.blueberry.webrtc.application;
 
+import com.bluestarfish.blueberry.webrtc.domain.UserSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketSession;
 
@@ -28,6 +29,7 @@ public class WebRTCUserRegistry {
         UserSession user = getBySession(webSocketSession);
         usersByName.remove(user.getName());
         usersBySessionId.remove(webSocketSession.getId());
+        
         return user;
     }
 
