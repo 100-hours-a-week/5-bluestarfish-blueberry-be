@@ -48,9 +48,10 @@ public class WebRTCRoomManager {
         log.info(" '{}'번 방 삭제", webRTCRoom.getRoomId());
     }
 
-    public void receiveVideoFrom(JsonObject jsonMessage, UserSession userSession) throws IOException {
-        userSession.receiveVideoFrom(userSession, extractSdpOffer(jsonMessage));
+    public void receiveVideoFrom(JsonObject jsonMessage, UserSession userSession, UserSession sender) throws IOException {
+        userSession.receiveVideoFrom(sender, extractSdpOffer(jsonMessage));
     }
+
 
     public void leaveRoom(UserSession userSession) throws IOException {
         rooms.get(userSession.getRoomName()).leave(userSession);
