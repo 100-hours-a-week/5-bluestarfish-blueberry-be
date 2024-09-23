@@ -11,6 +11,8 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 
+import static com.bluestarfish.blueberry.webrtc.constant.RTCMessage.SENDER;
+
 @Component(value = "receiveVideoFrom")
 public class ReceiveVideoFromHandler extends MessageHandler {
 
@@ -22,7 +24,10 @@ public class ReceiveVideoFromHandler extends MessageHandler {
     @Override
     public void handleMessage(JsonObject jsonMessage, WebSocketSession webSocketSession) throws IOException {
         UserSession userSession = findUserSession(webSocketSession);
-        webRTCRoomManager.receiveVideoFrom(jsonMessage, userSession);
+        webRTCRoomManager.receiveVideoFrom(jsonMessage, userSession, findUserSession(jsonMessage));
     }
 
+    private UserSession findUserSession(JsonObject jsonMessage) {
+        return webRTCUserRegistry.getByName(jsonMessage.get(SENDER).getAsString());
+    }
 }
