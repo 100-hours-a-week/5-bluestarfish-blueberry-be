@@ -1,6 +1,6 @@
 package com.bluestarfish.blueberry.config;
 
-import com.bluestarfish.blueberry.webrtc.handler.KurentoHandler;
+import com.bluestarfish.blueberry.webrtc.presentation.KurentoHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;

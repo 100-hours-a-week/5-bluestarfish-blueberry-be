@@ -1,6 +1,5 @@
 package com.bluestarfish.blueberry.oauth2;
 
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -22,7 +21,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     private String frontEndServerIp;
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException {
         CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
 
         response.addCookie(createCookie("Authorization", URLEncoder.encode(customOAuth2User.getToken(), StandardCharsets.UTF_8), true));

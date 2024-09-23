@@ -60,9 +60,16 @@ public class UserServiceImpl implements UserService {
         if (!authCode.getCode().equals("pass")) {
             throw new UserException("Email verification is required", HttpStatus.UNAUTHORIZED);
         }
-
+        
         userRepository.findByEmail(joinRequest.getEmail())
                 .ifPresent(user -> {
+                    if (user.getDeletedAt() != null) {
+                        userRepository.deleteById(user.getId());
+                        userRepository.flush();
+
+                        return;
+                    }
+
                     throw new UserException("The email address already exists", HttpStatus.CONFLICT);
                 });
 

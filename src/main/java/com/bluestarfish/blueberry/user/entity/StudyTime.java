@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.sql.Time;
 import java.time.LocalDate;
@@ -13,11 +15,9 @@ import java.time.LocalDate;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(
-        name = "study_time",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "date"})
-        }
+@Table(name = "study_time",
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "date"})},
+        indexes = {@Index(name = "idx_time", columnList = "time")}
 )
 public class StudyTime {
     @Id
@@ -27,6 +27,7 @@ public class StudyTime {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     private LocalDate date;

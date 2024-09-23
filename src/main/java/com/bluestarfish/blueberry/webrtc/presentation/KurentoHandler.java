@@ -1,14 +1,15 @@
-package com.bluestarfish.blueberry.webrtc.handler;
+package com.bluestarfish.blueberry.webrtc.presentation;
 
-import com.bluestarfish.blueberry.webrtc.UserSession;
-import com.bluestarfish.blueberry.webrtc.WebRTCRoom;
-import com.bluestarfish.blueberry.webrtc.WebRTCRoomManager;
-import com.bluestarfish.blueberry.webrtc.WebRTCUserRegistry;
+import com.bluestarfish.blueberry.webrtc.application.WebRTCRoomManager;
+import com.bluestarfish.blueberry.webrtc.application.WebRTCUserRegistry;
+import com.bluestarfish.blueberry.webrtc.domain.UserSession;
+import com.bluestarfish.blueberry.webrtc.domain.WebRTCRoom;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.IceCandidate;
+import org.kurento.commons.exception.KurentoException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -35,9 +36,12 @@ public class KurentoHandler extends TextWebSocketHandler {
             @Nullable final WebSocketSession webSocketSession,
             @Nullable final TextMessage textMessage
     ) throws Exception {
+        Optional.ofNullable(textMessage).orElseThrow(
+                () -> new KurentoException("")
+        );
+
         JsonObject jsonMessage = convertToJsonObject(textMessage);
         UserSession userSession = findUserSession(webSocketSession);
-
         printUserMessage(userSession, jsonMessage);
 
         switch (extractMessageId(jsonMessage)) {
@@ -174,19 +178,13 @@ public class KurentoHandler extends TextWebSocketHandler {
     }
 
     private void joinRoom(JsonObject jsonMessage, WebSocketSession webSocketSession) throws IOException {
-        webRTCUserRegistry.register(
-                tryToJoinRoom(jsonMessage, webSocketSession)
-        );
+        webRTCUserRegistry.register(tryToJoinRoom(jsonMessage, webSocketSession));
     }
 
     private UserSession tryToJoinRoom(JsonObject jsonMessage, WebSocketSession webSocketSession) throws IOException {
         return webRTCRoomManager
                 .getRoom(extractRoomId(jsonMessage))
                 .join(jsonMessage, webSocketSession);
-    }
-
-    private String extractName(JsonObject jsonMessage) {
-        return jsonMessage.get(NAME).getAsString();
     }
 
     private String extractRoomId(JsonObject jsonMessage) {
