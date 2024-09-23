@@ -60,8 +60,7 @@ public class UserServiceImpl implements UserService {
         if (!authCode.getCode().equals("pass")) {
             throw new UserException("Email verification is required", HttpStatus.UNAUTHORIZED);
         }
-
-        // 탈퇴한 회원 어떻게 관리?
+        
         userRepository.findByEmail(joinRequest.getEmail())
                 .ifPresent(user -> {
                     if (user.getDeletedAt() != null) {

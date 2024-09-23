@@ -15,6 +15,8 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -28,19 +30,30 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     public OAuth2User loadUser(OAuth2UserRequest oAuth2UserRequest) throws OAuth2AuthenticationException {
         OAuth2User oAuth2User = super.loadUser(oAuth2UserRequest);
         KakaoResponse kakaoResponse = new KakaoResponse(oAuth2User.getAttributes());
-
         String email = kakaoResponse.getEmail(); // 식별자 붙인 이메일
+        Optional<User> foundUser = userRepository.findByEmail(email);
 
-        // 이메일 찾고 없으면 저장 및 조회
-        // 있으면 조회
-        // 중복이메일
-        User user = userRepository.findByEmailAndDeletedAtIsNull(email)
-                .orElseGet(() -> userRepository.save(
-                        User.builder()
-                                .email(email)
-                                .authType(AuthType.KAKAO)
-                                .build()
-                ));
+        User user = foundUser.get();
+        if (user == null) {
+            user = userRepository.save(
+                    User.builder()
+                            .email(email)
+                            .authType(AuthType.KAKAO)
+                            .build()
+            );
+        }
+
+
+        if (user.getDeletedAt() != null) {
+            userRepository.deleteById(user.getId());
+            userRepository.flush();
+            user = userRepository.save(
+                    User.builder()
+                            .email(email)
+                            .authType(AuthType.KAKAO)
+                            .build()
+            );
+        }
 
         JWTTokens token = jwtUtils.createJwt(user.getId());
 

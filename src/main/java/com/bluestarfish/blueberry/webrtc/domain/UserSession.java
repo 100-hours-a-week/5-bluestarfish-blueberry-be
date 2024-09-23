@@ -1,6 +1,5 @@
-package com.bluestarfish.blueberry.webrtc;
+package com.bluestarfish.blueberry.webrtc.domain;
 
-import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -32,29 +31,26 @@ public class UserSession implements Closeable {
     private final MediaPipeline pipeline;
     private final WebRtcEndpoint outgoingMedia;
     private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
-    private final UserRepository userRepository;
 
     public UserSession(
             JsonObject jsonMessage,
             WebSocketSession session,
-            MediaPipeline pipeline,
-            UserRepository userRepository
+            MediaPipeline pipeline
     ) {
-        this.userId = jsonMessage.get("userId").getAsLong();
-        this.name = jsonMessage.get("name").getAsString();
-        if (!jsonMessage.get("profileImage").isJsonNull()) {
-            this.profileImage = jsonMessage.get("profileImage").getAsString();
+        this.userId = jsonMessage.get(USER_ID).getAsLong();
+        this.name = jsonMessage.get(NAME).getAsString();
+        if (!jsonMessage.get(PROFILE_IMAGE).isJsonNull()) {
+            this.profileImage = jsonMessage.get(PROFILE_IMAGE).getAsString();
         } else {
             this.profileImage = null;
         }
-        this.roomName = jsonMessage.get("room").getAsString();
-        this.camEnabled = jsonMessage.get("camEnabled").getAsBoolean();
-        this.micEnabled = jsonMessage.get("micEnabled").getAsBoolean();
-        this.speakerEnabled = jsonMessage.get("speakerEnabled").getAsBoolean();
+        this.roomName = jsonMessage.get(ROOM).getAsString();
+        this.camEnabled = jsonMessage.get(CAM_ENABLED).getAsBoolean();
+        this.micEnabled = jsonMessage.get(MIC_ENABLED).getAsBoolean();
+        this.speakerEnabled = jsonMessage.get(SPEAKER_ENABLED).getAsBoolean();
 
         this.pipeline = pipeline;
         this.session = session;
-        this.userRepository = userRepository;
         this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline).build();
 
         this.outgoingMedia.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
@@ -92,12 +88,12 @@ public class UserSession implements Closeable {
         String ipSdpAnswer = getEndpointForUser(sender).processOffer(sdpOffer);
         JsonObject scParams = new JsonObject();
         scParams.addProperty(SOCKET_MESSAGE_ID, RECEIVE_VIDEO_ANSWER);
-        scParams.addProperty("userId", sender.getUserId());
+        scParams.addProperty(USER_ID, sender.getUserId());
         scParams.addProperty(NAME, sender.getName());
-        scParams.addProperty("profileImage", sender.getProfileImage());
-        scParams.addProperty("camEnabled", sender.isCamEnabled());
-        scParams.addProperty("micEnabled", sender.isMicEnabled());
-        scParams.addProperty("speakerEnabled", sender.isSpeakerEnabled());
+        scParams.addProperty(PROFILE_IMAGE, sender.getProfileImage());
+        scParams.addProperty(CAM_ENABLED, sender.isCamEnabled());
+        scParams.addProperty(MIC_ENABLED, sender.isMicEnabled());
+        scParams.addProperty(SPEAKER_ENABLED, sender.isSpeakerEnabled());
         scParams.addProperty(SDP_ANSWER, ipSdpAnswer);
 
         sendMessage(scParams);
@@ -238,6 +234,7 @@ public class UserSession implements Closeable {
         int result = 1;
         result = 31 * result + name.hashCode();
         result = 31 * result + roomName.hashCode();
+
         return result;
     }
 }
