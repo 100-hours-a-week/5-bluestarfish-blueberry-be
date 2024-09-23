@@ -27,10 +27,10 @@ import static com.bluestarfish.blueberry.webrtc.constant.RTCMessage.*;
 @Slf4j
 @Getter
 public class WebRTCRoom implements Closeable {
-    private final ConcurrentMap<String, UserSession> participants = new ConcurrentHashMap<>();
     private final MediaPipeline pipeline;
     private final String roomId;
     private final UserRepository userRepository;
+    private final ConcurrentMap<String, UserSession> participants = new ConcurrentHashMap<>();
 
     public WebRTCRoom(
             String roomId,

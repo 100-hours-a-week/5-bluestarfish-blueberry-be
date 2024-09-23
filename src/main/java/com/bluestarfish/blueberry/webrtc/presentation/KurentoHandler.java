@@ -36,9 +36,15 @@ public class KurentoHandler extends TextWebSocketHandler {
             @Nullable final WebSocketSession webSocketSession,
             @Nullable final TextMessage textMessage
     ) throws Exception {
-        Optional.ofNullable(textMessage).orElseThrow(
-                () -> new KurentoException("")
-        );
+        try {
+            Optional.ofNullable(textMessage).orElseThrow(
+                    () -> new KurentoException("WebSocket message is null")
+            );
+        } catch (KurentoException e) {
+            log.error("KurentoException occurred: {}", e.getMessage());
+            sendErrorMessage(webSocketSession, e.getMessage());
+            return;
+        }
 
         JsonObject jsonMessage = convertToJsonObject(textMessage);
         UserSession userSession = findUserSession(webSocketSession);
@@ -92,9 +98,7 @@ public class KurentoHandler extends TextWebSocketHandler {
             JsonObject jsonMessage,
             UserSession userSession
     ) {
-        WebRTCRoom webRTCRoom = webRTCRoomManager.getRoom(
-                userSession.getRoomName()
-        );
+        WebRTCRoom webRTCRoom = webRTCRoomManager.getRoom(userSession.getRoomName());
         webRTCRoom.sendCamControl(jsonMessage, userSession);
     }
 
@@ -102,9 +106,7 @@ public class KurentoHandler extends TextWebSocketHandler {
             JsonObject jsonMessage,
             UserSession userSession
     ) {
-        WebRTCRoom webRTCRoom = webRTCRoomManager.getRoom(
-                userSession.getRoomName()
-        );
+        WebRTCRoom webRTCRoom = webRTCRoomManager.getRoom(userSession.getRoomName());
         webRTCRoom.sendMicControl(jsonMessage, userSession);
     }
 
@@ -117,7 +119,8 @@ public class KurentoHandler extends TextWebSocketHandler {
             UserSession userSession
     ) {
         Optional.ofNullable(userSession)
-                .ifPresent(session -> {
+                .ifPresent(
+                        session -> {
                             JsonObject candidate = extractCandidate(jsonMessage);
 
                             userSession.addCandidate(
@@ -197,6 +200,22 @@ public class KurentoHandler extends TextWebSocketHandler {
 
         if (webRTCroom.getParticipants().isEmpty()) {
             webRTCRoomManager.removeRoom(webRTCroom);
+        }
+    }
+
+    private void sendErrorMessage(
+            @Nullable WebSocketSession webSocketSession,
+            String errorMessage
+    ) {
+        if (webSocketSession != null && webSocketSession.isOpen()) {
+            try {
+                JsonObject errorResponse = new JsonObject();
+                errorResponse.addProperty(SOCKET_MESSAGE_ID, "ERROR");
+                errorResponse.addProperty(MESSAGE, errorMessage);
+                webSocketSession.sendMessage(new TextMessage(errorResponse.toString()));
+            } catch (IOException e) {
+                log.error("Failed to send error message to client: {}", e.getMessage());
+            }
         }
     }
 }
