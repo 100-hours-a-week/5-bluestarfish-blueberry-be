@@ -150,7 +150,7 @@ public class NoticeServiceImpl implements NoticeService {
 
                 notification.setNotiStatus(noticeDto.getNotiStatus());
 
-                emitter.send(SseEmitter.event().name("notification").data(notification.getNotiStatus()));
+                emitter.send(SseEmitter.event().name("notification").data(notification));
 
                 return notification;
 
