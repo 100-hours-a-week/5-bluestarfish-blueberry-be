@@ -3,11 +3,12 @@ package com.bluestarfish.blueberry.user.service;
 import com.bluestarfish.blueberry.auth.entity.AuthCode;
 import com.bluestarfish.blueberry.auth.repository.AuthCodeRepository;
 import com.bluestarfish.blueberry.common.s3.S3Uploader;
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.user.dto.*;
 import com.bluestarfish.blueberry.user.entity.StudyTime;
 import com.bluestarfish.blueberry.user.entity.User;
-import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.StudyTimeRepository;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserByToken(String accessToken) {
         Long userId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
-        return UserResponse.from(userRepository.findById(userId).orElseThrow(() -> new UserException("", HttpStatus.NOT_FOUND)));
+        return UserResponse.from(userRepository.findById(userId).orElseThrow(() -> new CustomException("", ExceptionDomain.USER, HttpStatus.NOT_FOUND)));
     }
 
     @Override
@@ -55,15 +56,15 @@ public class UserServiceImpl implements UserService {
         // 일단 있는지 확인하고 있다면 값 까지 확인해서 pass라면 다음 진행
         // 하나라도 아니면 회원가입 실패응답
         AuthCode authCode = authCodeRepository.findByEmail(joinRequest.getEmail())
-                .orElseThrow(() -> new UserException("Email verification is required", HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new CustomException("Email verification is required", ExceptionDomain.USER, HttpStatus.UNAUTHORIZED));
 
         if (!authCode.getCode().equals("pass")) {
-            throw new UserException("Email verification is required", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Email verification is required", ExceptionDomain.USER, HttpStatus.UNAUTHORIZED);
         }
 
         userRepository.findByEmail(joinRequest.getEmail())
                 .ifPresent(user -> {
-                    throw new UserException("The email address already exists", HttpStatus.CONFLICT);
+                    throw new CustomException("The email address already exists", ExceptionDomain.USER, HttpStatus.CONFLICT);
                 });
 
         joinRequest.setPassword(passwordEncoder.encode(joinRequest.getPassword()));
@@ -76,7 +77,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse findById(Long id) {
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
+                () -> new CustomException("A user with " + id + " not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
         );
 
         return UserResponse.from(user);
@@ -90,12 +91,12 @@ public class UserServiceImpl implements UserService {
     ) throws IOException {
 
         User user = userRepository.findByIdAndDeletedAtIsNull(id).orElseThrow(
-                () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
+                () -> new CustomException("A user with " + id + " not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
         );
 
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
         if (!tokenId.equals(user.getId())) {
-            throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.USER, HttpStatus.UNAUTHORIZED);
         }
 
         // FIXME: 이후 리팩토링
@@ -132,11 +133,11 @@ public class UserServiceImpl implements UserService {
     ) {
         User user = userRepository.findByIdAndDeletedAtIsNull(id)
                 .orElseThrow(
-                        () -> new UserException("A user with " + id + " not found", HttpStatus.NOT_FOUND)
+                        () -> new CustomException("A user with " + id + " not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
                 );
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
         if (!tokenId.equals(user.getId())) {
-            throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.USER, HttpStatus.UNAUTHORIZED);
         }
 
         user.setDeletedAt(LocalDateTime.now());
@@ -146,7 +147,7 @@ public class UserServiceImpl implements UserService {
     public void validateNickname(String nickname) {
         userRepository.findByNicknameAndDeletedAtIsNull(nickname)
                 .ifPresent(user -> {
-                    throw new UserException(nickname + " already in use", HttpStatus.CONFLICT);
+                    throw new CustomException(nickname + " already in use", ExceptionDomain.USER, HttpStatus.CONFLICT);
                 });
     }
 
@@ -154,12 +155,15 @@ public class UserServiceImpl implements UserService {
     public void resetPassword(PasswordResetRequest passwordResetRequest, String accessToken) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(passwordResetRequest.getEmail())
                 .orElseThrow(
-                        () -> new UserException("A user with " + passwordResetRequest.getEmail() + " not found",
-                                HttpStatus.NOT_FOUND)
+                        () -> new CustomException(
+                                "A user with " + passwordResetRequest.getEmail() + " not found",
+                                ExceptionDomain.USER,
+                                HttpStatus.NOT_FOUND
+                        )
                 );
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
         if (!tokenId.equals(user.getId())) {
-            throw new UserException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.USER, HttpStatus.UNAUTHORIZED);
         }
 
         user.setPassword(passwordEncoder.encode(passwordResetRequest.getPassword()));
@@ -169,7 +173,7 @@ public class UserServiceImpl implements UserService {
     public StudyTimeResponse getStudyTime(Long userId) {
 
         User user = userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
-                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+                () -> new CustomException("A user with " + userId + " not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
         );
 
         Optional<StudyTime> studyTime = studyTimeRepository.findByUserIdAndToday(user.getId());
@@ -190,11 +194,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public void updateStudyTime(Long userId, StudyTimeUpdateRequest studyTimeUpdateRequest) {
         userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
-                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+                () -> new CustomException("A user with " + userId + " not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
         );
 
         StudyTime studyTime = studyTimeRepository.findByUserIdAndToday(userId).orElseThrow(
-                () -> new UserException("Study time data not found", HttpStatus.NOT_FOUND)
+                () -> new CustomException("Study time data not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
         );
 
         studyTime.setTime(studyTimeUpdateRequest.getTime());
@@ -203,7 +207,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<RankResponse> getRanks(Long userId) {
         userRepository.findByIdAndDeletedAtIsNull(userId).orElseThrow(
-                () -> new UserException("A user with " + userId + " not found", HttpStatus.NOT_FOUND)
+                () -> new CustomException("A user with " + userId + " not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
         );
 
         List<StudyTime> studyTimes = studyTimeRepository.findRanksTop10Yesterday();

@@ -3,8 +3,9 @@ package com.bluestarfish.blueberry.comment.service;
 import com.bluestarfish.blueberry.comment.dto.CommentRequest;
 import com.bluestarfish.blueberry.comment.dto.CommentResponse;
 import com.bluestarfish.blueberry.comment.entity.Comment;
-import com.bluestarfish.blueberry.comment.exception.CommentException;
 import com.bluestarfish.blueberry.comment.repository.CommentRepository;
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.post.entity.Post;
 import com.bluestarfish.blueberry.post.repository.PostRepository;
@@ -37,17 +38,17 @@ public class CommentServiceImpl implements CommentService {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
         Post post = postRepository.findById(commentRequest.getPostId())
-                .orElseThrow(() -> new CommentException("Post not found with id: " + commentRequest.getPostId(), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Post not found with id: " + commentRequest.getPostId(), ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND));
         User user = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getUserId())
-                .orElseThrow(() -> new CommentException("User not found with id: " + commentRequest.getUserId(), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("User not found with id: " + commentRequest.getUserId(), ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND));
 
         if(!tokenId.equals(user.getId())) {
-            throw new CommentException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.COMMENT, HttpStatus.UNAUTHORIZED);
         }
 
         if(commentRequest.getMentionId() != null) {
             User mentionedUser = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getMentionId())
-                    .orElseThrow(() -> new CommentException("Mentioned User not found with id: " + commentRequest.getUserId(), HttpStatus.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException("Mentioned User not found with id: " + commentRequest.getUserId(), ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND));
             commentRepository.save(commentRequest.toEntity(post, user, mentionedUser));
             return;
         }
@@ -66,14 +67,14 @@ public class CommentServiceImpl implements CommentService {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
         User user = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new CommentException("Post not found with id: " + postId, HttpStatus.NOT_FOUND)).getUser();
+                .orElseThrow(() -> new CustomException("Post not found with id: " + postId, ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND)).getUser();
 
         if(!tokenId.equals(user.getId())) {
-            throw new CommentException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.COMMENT, HttpStatus.UNAUTHORIZED);
         }
 
         Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
-                .orElseThrow(() -> new CommentException("Comment not found with id: " + commentId, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Comment not found with id: " + commentId, ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND));
         comment.setDeletedAt(LocalDateTime.now());
     }
 }

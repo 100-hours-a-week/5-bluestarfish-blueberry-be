@@ -1,19 +1,17 @@
 package com.bluestarfish.blueberry.notification.service;
 
 import com.bluestarfish.blueberry.comment.entity.Comment;
-import com.bluestarfish.blueberry.comment.exception.CommentException;
 import com.bluestarfish.blueberry.comment.repository.CommentRepository;
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.notification.dto.NoticeDto;
 import com.bluestarfish.blueberry.notification.entity.Notification;
 import com.bluestarfish.blueberry.notification.enumeration.NotiStatus;
 import com.bluestarfish.blueberry.notification.enumeration.NotiType;
-import com.bluestarfish.blueberry.notification.exception.NotificationException;
 import com.bluestarfish.blueberry.notification.repository.NotificationRepository;
 import com.bluestarfish.blueberry.room.entity.Room;
-import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
-import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
@@ -96,22 +94,29 @@ public class NoticeServiceImpl implements NoticeService {
 
     public Notification sendNotice(Long userId, NoticeDto noticeDto) {
         User sender = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException("User id " + userId + " not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("User id " + userId + " not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND));
         User receiver = userRepository.findById(noticeDto.getReceiverId())
-                .orElseThrow(() -> new UserException("Receiver Id " + noticeDto.getReceiverId() + " not found",
-                        HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(
+                        "Receiver Id " + noticeDto.getReceiverId() + " not found",
+                        ExceptionDomain.USER,
+                        HttpStatus.NOT_FOUND
+                ));
 
         Comment comment = (noticeDto.getCommentId() != null)
                 ? commentRepository.findById(noticeDto.getCommentId())
-                .orElseThrow(() -> new CommentException("Comment Id " + noticeDto.getCommentId() + " not found",
-                        HttpStatus.NOT_FOUND))
-                : null;
+                .orElseThrow(() -> new CustomException(
+                        "Comment Id " + noticeDto.getCommentId() + " not found",
+                        ExceptionDomain.COMMENT,
+                        HttpStatus.NOT_FOUND
+                )) : null;
 
         Room room = (noticeDto.getRoomId() != null)
                 ? roomRepository.findById(noticeDto.getRoomId())
-                .orElseThrow(() -> new RoomException("Room Id " + noticeDto.getRoomId() + " not found",
-                        HttpStatus.NOT_FOUND))
-                : null;
+                .orElseThrow(() -> new CustomException(
+                        "Room Id " + noticeDto.getRoomId() + " not found",
+                        ExceptionDomain.ROOM,
+                        HttpStatus.NOT_FOUND
+                )) : null;
 
         Notification notification = Notification.builder()
                 .sender(sender)
@@ -145,7 +150,11 @@ public class NoticeServiceImpl implements NoticeService {
         if (emitter != null) {
             try {
                 Notification notification = notificationRepository.findById(noticeId)
-                        .orElseThrow(() -> new NotificationException("Notification not found", HttpStatus.NOT_FOUND));
+                        .orElseThrow(() -> new CustomException(
+                                "Notification not found",
+                                ExceptionDomain.NOTIFICATION,
+                                HttpStatus.NOT_FOUND
+                        ));
 
                 notification.setNotiStatus(noticeDto.getNotiStatus());
                 
@@ -169,7 +178,11 @@ public class NoticeServiceImpl implements NoticeService {
     @Override
     public void deleteNotification(Long noticeId) {
         Notification notification = notificationRepository.findById(noticeId)
-                .orElseThrow(() -> new NotificationException("Notification not found", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(
+                        "Notification not found",
+                        ExceptionDomain.NOTIFICATION,
+                        HttpStatus.NOT_FOUND
+                ));
         notification.setDeletedAt(LocalDateTime.now());
 
         notificationRepository.save(notification);
