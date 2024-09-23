@@ -136,7 +136,7 @@ public class NoticeServiceImpl implements NoticeService {
     public List<UserResponse> getFriendsList(Long userId) {
         // 1. 친구 추가 요청을 받은사람(Receiver)가 본인(userId)일 때
         List<Notification> notifications = notificationRepository
-                .findByReceiverIdAndNotiTypeAndNotiStatusAndDeletedAtIsNull(userId, NotiType.FRIEND, NotiStatus.ACCEPTED);
+                .findByReceiverIdAndNotiTypeAndNotiStatus(userId, NotiType.FRIEND, NotiStatus.ACCEPTED);
 
         // 그러면 Sender의 정보를 전달해야함
         List<UserResponse> userSenderResponses = notifications.stream()
@@ -147,7 +147,7 @@ public class NoticeServiceImpl implements NoticeService {
                 .toList();
 
         // 2. 친구 추가 요청을 받은사람이 상대(Receiver)일때, 즉 내(userId)가 친구 추가 요청을 보냈을때(Sender)
-        notifications = notificationRepository.findBySenderIdAndNotiTypeAndNotiStatusAndDeletedAtIsNull(userId, NotiType.FRIEND, NotiStatus.ACCEPTED);
+        notifications = notificationRepository.findBySenderIdAndNotiTypeAndNotiStatus(userId, NotiType.FRIEND, NotiStatus.ACCEPTED);
 
         // 그러면 Receiver의 정보 전달
         List<UserResponse> userReceiverResponses = notifications.stream()
