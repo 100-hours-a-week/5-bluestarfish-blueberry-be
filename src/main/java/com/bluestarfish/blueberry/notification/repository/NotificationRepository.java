@@ -9,7 +9,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findByReceiverIdAndDeletedAtIsNull(Long receiverId);
 
-    List<Notification> findByReceiverIdAndNotiTypeAndNotiStatusAndDeletedAtIsNull(Long receiverId, NotiType notiType, NotiStatus notiStatus);
+    List<Notification> findByReceiverIdAndNotiTypeAndNotiStatus(Long receiverId, NotiType notiType, NotiStatus notiStatus);
 
-    List<Notification> findBySenderIdAndNotiTypeAndNotiStatusAndDeletedAtIsNull(Long senderId, NotiType notiType, NotiStatus notiStatus);
+    List<Notification> findBySenderIdAndNotiTypeAndNotiStatus(Long senderId, NotiType notiType, NotiStatus notiStatus);
 }
