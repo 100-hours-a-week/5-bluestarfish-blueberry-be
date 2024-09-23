@@ -26,6 +26,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.bluestarfish.blueberry.util.CookieCreator.removeAuthCookie;
+
 @Slf4j
 @Component
 @RequiredArgsConstructor
@@ -81,21 +83,22 @@ public class JWTFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
+
+        log.info("인가 요청 URI => {}", requestUri);
+
         if (excludedUrls.containsKey(requestUri) && excludedUrls.get(requestUri).contains(method)) {
             filterChain.doFilter(request, response);
             return;
         }
-
-        log.debug("요청 URI => {}", requestUri);
 
         if (requestUri.contains("login")) {
             filterChain.doFilter(request, response);
             return;
         }
 
+        // FIXME: 400번대 에러일 때는 클라이언트가 알 수 있도록 응답 핸들러를 통해서 예외를 전달해야 함
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
             throw new AuthException("The cookie containing the user ID is absent", HttpStatus.UNAUTHORIZED);
@@ -120,8 +123,9 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             if (isExpired(authorization)) {
                 String refreshToken = findRefreshToken(userId).getToken();
-
+                
                 if (isExpired(refreshToken)) {
+                    response.addCookie(removeAuthCookie());
                     discardRefreshToken(userId);
                     throw new AuthException("Refresh Token is expired", HttpStatus.UNAUTHORIZED);
                 }

@@ -8,6 +8,5 @@ import lombok.Getter;
 @Builder
 @AllArgsConstructor
 public class LoginSuccessResult {
-    private Long userId;
     private String accessToken;
 }

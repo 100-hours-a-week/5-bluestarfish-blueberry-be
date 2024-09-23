@@ -53,6 +53,12 @@ public class AuthServiceImpl implements AuthService {
             throw new AuthException("The password is not match", HttpStatus.UNAUTHORIZED);
         }
 
+        // 리프레쉬 토큰이 존재한다면 이미 로그인 한 유저
+        refreshTokenRepository.findByUserId(user.getId())
+                .ifPresent(refreshToken -> {
+                    throw new AuthException("The user is already logged in.", HttpStatus.UNAUTHORIZED);
+                });
+
         JWTTokens jwtTokens = jwtUtils.createJwt(user.getId());
 
         refreshTokenRepository.save(
@@ -63,14 +69,12 @@ public class AuthServiceImpl implements AuthService {
         );
 
         return LoginSuccessResult.builder()
-                .userId(user.getId())
                 .accessToken(jwtTokens.accessToken())
                 .build();
     }
 
     @Override
     public void logout(String accessToken) {
-        accessToken = URLDecoder.decode(accessToken, StandardCharsets.UTF_8);
         refreshTokenRepository.deleteByUserId(jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8)));
     }
 
@@ -79,12 +83,13 @@ public class AuthServiceImpl implements AuthService {
         String email = mailRequest.getEmail();
 
         if (mailRequest.getType().equals(MailAuthType.JOIN.getType())) {
-            userRepository.findByEmail(email)
+            userRepository.findByEmailAndDeletedAtIsNull(email)
                     .ifPresent(user -> {
                         throw new AuthException("The email address already exists", HttpStatus.CONFLICT);
                     });
         }
 
+        // FIXME: 메일인증 전송 라이브러리 에러에서 400번대 응답코드, 메시지로 수정
         try {
             authCodeRepository.deleteByEmail(email);
             authCodeRepository.save(

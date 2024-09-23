@@ -55,6 +55,7 @@ public class S3Uploader {
 
 
     private File convert(MultipartFile file) throws IOException {
+        // S3에 업로드하기 위해서는 MultipartFile을 File객체로 변환해야 함
         String originalFileName = file.getOriginalFilename();
         String uuid = UUID.randomUUID().toString();
         String uniqueFileName = uuid + "_" + originalFileName.replaceAll("\\s", "_");
@@ -62,6 +63,7 @@ public class S3Uploader {
         File convertFile = new File(uniqueFileName);
         if (convertFile.createNewFile()) {
             try (FileOutputStream fos = new FileOutputStream(convertFile)) {
+                // multipart 파일을 file객체로 변환하기 위해서 file객체에 바이트 작성
                 fos.write(file.getBytes());
             } catch (IOException e) {
                 log.error("파일 변환 중 오류 발생: {}", e.getMessage());
