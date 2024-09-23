@@ -1,6 +1,5 @@
 package com.bluestarfish.blueberry.webrtc.domain;
 
-import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.google.gson.JsonObject;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -32,13 +31,11 @@ public class UserSession implements Closeable {
     private final MediaPipeline pipeline;
     private final WebRtcEndpoint outgoingMedia;
     private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
-    private final UserRepository userRepository;
 
     public UserSession(
             JsonObject jsonMessage,
             WebSocketSession session,
-            MediaPipeline pipeline,
-            UserRepository userRepository
+            MediaPipeline pipeline
     ) {
         this.userId = jsonMessage.get(USER_ID).getAsLong();
         this.name = jsonMessage.get(NAME).getAsString();
@@ -54,7 +51,6 @@ public class UserSession implements Closeable {
 
         this.pipeline = pipeline;
         this.session = session;
-        this.userRepository = userRepository;
         this.outgoingMedia = new WebRtcEndpoint.Builder(pipeline).build();
 
         this.outgoingMedia.addIceCandidateFoundListener(new EventListener<IceCandidateFoundEvent>() {
@@ -238,7 +234,7 @@ public class UserSession implements Closeable {
         int result = 1;
         result = 31 * result + name.hashCode();
         result = 31 * result + roomName.hashCode();
-        
+
         return result;
     }
 }
