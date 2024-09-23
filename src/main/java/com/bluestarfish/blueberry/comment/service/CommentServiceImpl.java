@@ -34,7 +34,7 @@ public class CommentServiceImpl implements CommentService {
     private final JWTUtils jwtUtils;
 
     @Override
-    public void createComment(CommentRequest commentRequest, String accessToken) {
+    public CommentResponse createComment(CommentRequest commentRequest, String accessToken) {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
         Post post = postRepository.findById(commentRequest.getPostId())
@@ -49,10 +49,9 @@ public class CommentServiceImpl implements CommentService {
         if(commentRequest.getMentionId() != null) {
             User mentionedUser = userRepository.findByIdAndDeletedAtIsNull(commentRequest.getMentionId())
                     .orElseThrow(() -> new CustomException("Mentioned User not found with id: " + commentRequest.getUserId(), ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND));
-            commentRepository.save(commentRequest.toEntity(post, user, mentionedUser));
-            return;
+            return CommentResponse.from(commentRepository.save(commentRequest.toEntity(post, user, mentionedUser)));
         }
-        commentRepository.save(commentRequest.toEntity(post, user));
+        return CommentResponse.from(commentRepository.save(commentRequest.toEntity(post, user)));
     }
 
     @Override
@@ -66,15 +65,14 @@ public class CommentServiceImpl implements CommentService {
     public void deleteCommentById(Long postId, Long commentId, String accessToken) {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
-        User user = postRepository.findByIdAndDeletedAtIsNull(postId)
-                .orElseThrow(() -> new CustomException("Post not found with id: " + postId, ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND)).getUser();
+        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
+                .orElseThrow(() -> new CustomException("Comment not found with id: " + commentId, ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND));
+
+        User user = comment.getUser();
 
         if(!tokenId.equals(user.getId())) {
             throw new CustomException("Not match request ID and login ID", ExceptionDomain.COMMENT, HttpStatus.UNAUTHORIZED);
         }
-
-        Comment comment = commentRepository.findByIdAndDeletedAtIsNull(commentId)
-                .orElseThrow(() -> new CustomException("Comment not found with id: " + commentId, ExceptionDomain.COMMENT, HttpStatus.NOT_FOUND));
         comment.setDeletedAt(LocalDateTime.now());
     }
 }

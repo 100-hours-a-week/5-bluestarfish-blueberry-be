@@ -2,29 +2,25 @@ package com.bluestarfish.blueberry.common.entity;
 
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.user.entity.User;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.PreUpdate;
-import jakarta.persistence.Table;
-import java.sql.Time;
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.sql.Time;
+import java.time.LocalDateTime;
 
 
 @Getter
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "users_rooms")
+@Table(
+        name = "users_rooms"
+)
 public class UserRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -33,10 +29,12 @@ public class UserRoom {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     @ManyToOne
     @JoinColumn(name = "room_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Room room;
 
     @Column(name = "is_host", nullable = false)

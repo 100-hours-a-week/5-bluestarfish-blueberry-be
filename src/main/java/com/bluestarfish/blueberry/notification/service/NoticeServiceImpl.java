@@ -11,11 +11,13 @@ import com.bluestarfish.blueberry.notification.enumeration.NotiType;
 import com.bluestarfish.blueberry.notification.repository.NotificationRepository;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
+import com.bluestarfish.blueberry.user.dto.UserResponse;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import jakarta.transaction.Transactional;
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -77,7 +79,6 @@ public class NoticeServiceImpl implements NoticeService {
         });
 
         return emitter;
-
     }
 
     public void sendMessage(Long userId, NoticeDto noticeDto) {
@@ -157,8 +158,8 @@ public class NoticeServiceImpl implements NoticeService {
                         ));
 
                 notification.setNotiStatus(noticeDto.getNotiStatus());
-                
-                emitter.send(SseEmitter.event().name("notification").data(notification.getNotiStatus()));
+
+                emitter.send(SseEmitter.event().name("notification").data(notification));
 
                 return notification;
 
@@ -173,6 +174,37 @@ public class NoticeServiceImpl implements NoticeService {
     public List<Notification> listNotifications(Long userId) {
 
         return notificationRepository.findByReceiverIdAndDeletedAtIsNull(userId);
+    }
+
+    @Override
+    public List<UserResponse> getFriendsList(Long userId) {
+        // 1. 친구 추가 요청을 받은사람(Receiver)가 본인(userId)일 때
+        List<Notification> notifications = notificationRepository
+                .findByReceiverIdAndNotiTypeAndNotiStatus(userId, NotiType.FRIEND, NotiStatus.ACCEPTED);
+
+        // 그러면 Sender의 정보를 전달해야함
+        List<UserResponse> userSenderResponses = notifications.stream()
+                .map(notification ->
+                        UserResponse.from(userRepository.findById(notification.getSender().getId())
+                                .orElseThrow(() -> new NotificationException("No User has input userId", HttpStatus.NOT_FOUND)))
+                )
+                .toList();
+
+        // 2. 친구 추가 요청을 받은사람이 상대(Receiver)일때, 즉 내(userId)가 친구 추가 요청을 보냈을때(Sender)
+        notifications = notificationRepository.findBySenderIdAndNotiTypeAndNotiStatus(userId, NotiType.FRIEND, NotiStatus.ACCEPTED);
+
+        // 그러면 Receiver의 정보 전달
+        List<UserResponse> userReceiverResponses = notifications.stream()
+                .map(notification ->
+                        UserResponse.from(userRepository.findById(notification.getReceiver().getId())
+                                .orElseThrow(() -> new NotificationException("No User has input userId", HttpStatus.NOT_FOUND)))
+                )
+                .toList();
+
+        List<UserResponse> friends = new ArrayList<>(userSenderResponses);
+        friends.addAll(userReceiverResponses);
+
+        return friends;
     }
 
     @Override

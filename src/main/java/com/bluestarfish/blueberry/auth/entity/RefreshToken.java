@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 
@@ -13,7 +15,12 @@ import java.time.LocalDateTime;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "refresh_tokens")
+@Table(
+        name = "refresh_tokens",
+        indexes = {
+                @Index(name = "idx_user_id", columnList = "user_id")
+        }
+)
 public class RefreshToken {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,6 +28,7 @@ public class RefreshToken {
 
     @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private User user;
 
     private String token;

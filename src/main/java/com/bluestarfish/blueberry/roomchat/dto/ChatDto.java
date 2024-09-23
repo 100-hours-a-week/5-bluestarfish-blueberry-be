@@ -32,7 +32,7 @@ public class ChatDto {
                 .senderId(chat.getSenderId())
                 .message(chat.getMessage())
                 .senderNickname(userInfo.getNickname())
-                .senderProfileImage("temporary.url")
+                .senderProfileImage(userInfo.getProfileImage())
                 .createdAt(chat.getCreatedAt())
                 .build();
     }

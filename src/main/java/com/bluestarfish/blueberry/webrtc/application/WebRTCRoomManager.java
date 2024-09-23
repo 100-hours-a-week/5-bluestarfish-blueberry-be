@@ -1,6 +1,7 @@
-package com.bluestarfish.blueberry.webrtc;
+package com.bluestarfish.blueberry.webrtc.application;
 
 import com.bluestarfish.blueberry.user.repository.UserRepository;
+import com.bluestarfish.blueberry.webrtc.domain.WebRTCRoom;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.kurento.client.KurentoClient;
