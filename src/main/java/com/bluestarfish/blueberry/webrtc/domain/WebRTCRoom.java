@@ -1,5 +1,7 @@
 package com.bluestarfish.blueberry.webrtc.domain;
 
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
@@ -57,7 +59,7 @@ public class WebRTCRoom implements Closeable {
     private UserSession createNewParticipant(JsonObject jsonMessage, WebSocketSession session) {
         User user = userRepository.findById(jsonMessage.get("userId").getAsLong())
                 .orElseThrow(
-                        () -> new UserException("", HttpStatus.NOT_FOUND)
+                        () -> new CustomException("", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
                 );
         jsonMessage.addProperty("profileImage", user.getProfileImage());
 
@@ -90,7 +92,7 @@ public class WebRTCRoom implements Closeable {
     private JsonObject createNewParticipantMessage(UserSession newParticipant) {
         User user = userRepository.findByNicknameAndDeletedAtIsNull(newParticipant.getName())
                 .orElseThrow(
-                        () -> new UserException("", HttpStatus.NOT_FOUND)
+                        () -> new CustomException("", ExceptionDomain.USER, HttpStatus.NOT_FOUND)
                 );
         JsonObject newParticipantMsg = new JsonObject();
         newParticipantMsg.addProperty(SOCKET_MESSAGE_ID, NEW_PARTICIPANT_ARRIVED);
