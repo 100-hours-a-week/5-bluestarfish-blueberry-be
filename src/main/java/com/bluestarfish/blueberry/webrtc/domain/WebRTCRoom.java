@@ -27,10 +27,10 @@ import static com.bluestarfish.blueberry.webrtc.constant.RTCMessage.*;
 @Slf4j
 @Getter
 public class WebRTCRoom implements Closeable {
-    private final ConcurrentMap<String, UserSession> participants = new ConcurrentHashMap<>();
-    private final MediaPipeline pipeline;
     private final String roomId;
-    private final UserRepository userRepository;
+    private final MediaPipeline pipeline;
+    private final UserRepository userRepository;// 서비스단에서 조회하도록?
+    private final ConcurrentMap<String, UserSession> participants = new ConcurrentHashMap<>();
 
     public WebRTCRoom(
             String roomId,
@@ -41,11 +41,6 @@ public class WebRTCRoom implements Closeable {
         this.pipeline = pipeline;
         this.userRepository = userRepository;
         log.info("{} 번 방 생성", roomId);
-    }
-
-    @PreDestroy
-    private void shutdown() {
-        this.close();
     }
 
     public UserSession join(JsonObject jsonMessage, WebSocketSession session) throws IOException {
@@ -69,8 +64,7 @@ public class WebRTCRoom implements Closeable {
         return new UserSession(
                 jsonMessage,
                 session,
-                pipeline,
-                userRepository
+                pipeline
         );
     }
 
@@ -101,11 +95,11 @@ public class WebRTCRoom implements Closeable {
         JsonObject newParticipantMsg = new JsonObject();
         newParticipantMsg.addProperty(SOCKET_MESSAGE_ID, NEW_PARTICIPANT_ARRIVED);
         newParticipantMsg.addProperty(NAME, newParticipant.getName());
-        newParticipantMsg.addProperty("userId", user.getId());
-        newParticipantMsg.addProperty("profileImage", user.getProfileImage());
-        newParticipantMsg.addProperty("camEnabled", newParticipant.isCamEnabled());
-        newParticipantMsg.addProperty("micEnabled", newParticipant.isMicEnabled());
-        newParticipantMsg.addProperty("speakerEnabled", newParticipant.isSpeakerEnabled());
+        newParticipantMsg.addProperty(USER_ID, user.getId());
+        newParticipantMsg.addProperty(PROFILE_IMAGE, user.getProfileImage());
+        newParticipantMsg.addProperty(CAM_ENABLED, newParticipant.isCamEnabled());
+        newParticipantMsg.addProperty(MIC_ENABLED, newParticipant.isMicEnabled());
+        newParticipantMsg.addProperty(SPEAKER_ENABLED, newParticipant.isSpeakerEnabled());
 
 
         return newParticipantMsg;
@@ -213,5 +207,10 @@ public class WebRTCRoom implements Closeable {
         });
 
         log.info("'{}'번 방 리소스 클리어", roomId);
+    }
+
+    @PreDestroy
+    private void shutdown() {
+        this.close();
     }
 }
