@@ -1,7 +1,6 @@
 package com.bluestarfish.blueberry.jwt;
 
 import com.bluestarfish.blueberry.auth.entity.RefreshToken;
-import com.bluestarfish.blueberry.auth.exception.AuthException;
 import com.bluestarfish.blueberry.auth.repository.RefreshTokenRepository;
 import com.bluestarfish.blueberry.exception.CustomException;
 import com.bluestarfish.blueberry.exception.ExceptionDomain;

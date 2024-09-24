@@ -3,7 +3,6 @@ package com.bluestarfish.blueberry.webrtc.domain;
 import com.bluestarfish.blueberry.exception.CustomException;
 import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.user.entity.User;
-import com.bluestarfish.blueberry.user.exception.UserException;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;

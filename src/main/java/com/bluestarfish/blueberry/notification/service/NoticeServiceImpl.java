@@ -186,7 +186,7 @@ public class NoticeServiceImpl implements NoticeService {
         List<UserResponse> userSenderResponses = notifications.stream()
                 .map(notification ->
                         UserResponse.from(userRepository.findById(notification.getSender().getId())
-                                .orElseThrow(() -> new NotificationException("No User has input userId", HttpStatus.NOT_FOUND)))
+                                .orElseThrow(() -> new CustomException("No User has input userId", ExceptionDomain.NOTIFICATION, HttpStatus.NOT_FOUND)))
                 )
                 .toList();
 
@@ -197,7 +197,7 @@ public class NoticeServiceImpl implements NoticeService {
         List<UserResponse> userReceiverResponses = notifications.stream()
                 .map(notification ->
                         UserResponse.from(userRepository.findById(notification.getReceiver().getId())
-                                .orElseThrow(() -> new NotificationException("No User has input userId", HttpStatus.NOT_FOUND)))
+                                .orElseThrow(() -> new CustomException("No User has input userId", ExceptionDomain.NOTIFICATION, HttpStatus.NOT_FOUND)))
                 )
                 .toList();
 
