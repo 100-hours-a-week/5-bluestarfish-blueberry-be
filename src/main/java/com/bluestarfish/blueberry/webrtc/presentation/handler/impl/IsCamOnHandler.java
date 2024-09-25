@@ -11,6 +11,8 @@ import org.springframework.web.socket.WebSocketSession;
 
 import java.io.IOException;
 
+import static com.bluestarfish.blueberry.webrtc.constant.RTCMessage.IS_CAM_ON;
+
 @Component(value = "isCamOn")
 public class IsCamOnHandler extends MessageHandler {
 
@@ -22,6 +24,7 @@ public class IsCamOnHandler extends MessageHandler {
     @Override
     public void handleMessage(JsonObject jsonMessage, WebSocketSession webSocketSession) throws IOException {
         UserSession userSession = findUserSession(webSocketSession);
+        userSession.updateCamEnabled(jsonMessage.get(IS_CAM_ON).getAsBoolean());
         webRTCRoomManager.sendCamControl(jsonMessage, userSession);
     }
 }

@@ -23,9 +23,9 @@ public class UserSession implements Closeable {
     private final String name;
     private final String profileImage;
     private final String roomName;
-    private final boolean camEnabled;
-    private final boolean micEnabled;
-    private final boolean speakerEnabled;
+    private boolean camEnabled;
+    private boolean micEnabled;
+    private boolean speakerEnabled;
 
     private final WebSocketSession session;
     private final MediaPipeline pipeline;
@@ -212,6 +212,14 @@ public class UserSession implements Closeable {
                 webRtc.addIceCandidate(candidate);
             }
         }
+    }
+
+    public void updateCamEnabled(boolean camEnabled) {
+        this.camEnabled = camEnabled;
+    }
+
+    public void updateMicEnabled(boolean micEnabled) {
+        this.micEnabled = micEnabled;
     }
 
     @Override
