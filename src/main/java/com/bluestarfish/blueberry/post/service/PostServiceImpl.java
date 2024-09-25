@@ -1,11 +1,12 @@
 package com.bluestarfish.blueberry.post.service;
 
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.post.dto.PostRequest;
 import com.bluestarfish.blueberry.post.dto.PostResponse;
 import com.bluestarfish.blueberry.post.entity.Post;
 import com.bluestarfish.blueberry.post.enumeration.PostType;
-import com.bluestarfish.blueberry.post.exception.PostException;
 import com.bluestarfish.blueberry.post.repository.PostRepository;
 import com.bluestarfish.blueberry.room.entity.Room;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
@@ -39,17 +40,17 @@ public class PostServiceImpl implements PostService {
     @Override
     public void createPost(PostRequest postRequest, String accessToken) {
         User user = userRepository.findByIdAndDeletedAtIsNull(postRequest.getUserId())
-                .orElseThrow(() -> new PostException("User not fount with id: " + postRequest.getUserId(), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("User not fount with id: " + postRequest.getUserId(), ExceptionDomain.POST, HttpStatus.NOT_FOUND));
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
         if(!tokenId.equals(user.getId())) {
-            throw new PostException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.POST, HttpStatus.UNAUTHORIZED);
         }
 
         Post post;
 
         if(postRequest.getRoomId() != null) {
             Room room = roomRepository.findByIdAndDeletedAtIsNull(postRequest.getRoomId())
-                    .orElseThrow(() -> new PostException("Room not found with id: " + postRequest.getRoomId(), HttpStatus.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException("Room not found with id: " + postRequest.getRoomId(), ExceptionDomain.POST, HttpStatus.NOT_FOUND));
             post = postRequest.toEntity(user, room);
         } else {
             post = postRequest.toEntity(user);
@@ -60,7 +61,7 @@ public class PostServiceImpl implements PostService {
     @Override
     public PostResponse getPostById(Long id) {
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Post not found with id: " + id, ExceptionDomain.POST, HttpStatus.NOT_FOUND));
         if(post.getRoom() != null) {
             return PostResponse.from(post, roomService.getActiveMemberCount(post.getRoom().getId()));
         }
@@ -119,14 +120,14 @@ public class PostServiceImpl implements PostService {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
 
         if(!tokenId.equals(postRequest.getUserId())) {
-            throw new PostException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.POST, HttpStatus.UNAUTHORIZED);
         }
 
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Post not found with id: " + id, ExceptionDomain.POST, HttpStatus.NOT_FOUND));
         if(postRequest.getRoomId() != null) {
             Room room = roomRepository.findByIdAndDeletedAtIsNull(postRequest.getRoomId())
-                    .orElseThrow(() -> new PostException("room not found with id: " + postRequest.getRoomId(), HttpStatus.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException("room not found with id: " + postRequest.getRoomId(), ExceptionDomain.POST, HttpStatus.NOT_FOUND));
             post.setRoom(room);
         }
         post.setTitle(postRequest.getTitle());
@@ -140,10 +141,10 @@ public class PostServiceImpl implements PostService {
     public void deletePostById(Long id, String accessToken) {
         Long tokenId = jwtUtils.getId(URLDecoder.decode(accessToken, StandardCharsets.UTF_8));
         Post post = postRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new PostException("Post not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Post not found with id: " + id, ExceptionDomain.POST, HttpStatus.NOT_FOUND));
 
         if(!tokenId.equals(post.getUser().getId())) {
-            throw new PostException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.POST, HttpStatus.UNAUTHORIZED);
         }
         post.setDeletedAt(LocalDateTime.now());
     }

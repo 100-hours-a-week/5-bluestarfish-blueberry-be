@@ -1,5 +1,7 @@
 package com.bluestarfish.blueberry.roomchat.service;
 
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.roomchat.dto.ChatDto;
 import com.bluestarfish.blueberry.roomchat.entity.Chat;
 import com.bluestarfish.blueberry.roomchat.repository.ChatRepository;
@@ -7,6 +9,7 @@ import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -30,7 +33,7 @@ public class ChatServiceImpl implements ChatService {
                 .build();
 
         User chatUser = userRepository.findById(chatDto.getSenderId())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new CustomException("User not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND));
 
         Chat savedChat = chatRepository.save(chat);
 
@@ -42,7 +45,7 @@ public class ChatServiceImpl implements ChatService {
         return chatRepository.findAllByRoomId(roomId).stream()
                 .map(chat -> {
                     User chatUser = userRepository.findById(chat.getSenderId())
-                            .orElseThrow(() -> new RuntimeException("User not found"));
+                            .orElseThrow(() -> new CustomException("User not found", ExceptionDomain.USER, HttpStatus.NOT_FOUND));
                     return ChatDto.from(chat, chatUser);
                 })
                 .toList();
