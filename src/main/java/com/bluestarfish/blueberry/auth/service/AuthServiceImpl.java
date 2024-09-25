@@ -54,11 +54,6 @@ public class AuthServiceImpl implements AuthService {
             throw new CustomException("The password is not match", ExceptionDomain.AUTH, HttpStatus.UNAUTHORIZED);
         }
 
-        // 리프레쉬 토큰이 존재한다면 이미 로그인 한 유저
-        refreshTokenRepository.findByUserId(user.getId())
-                .ifPresent(refreshToken -> {
-                    throw new CustomException("The user is already logged in.", ExceptionDomain.AUTH, HttpStatus.UNAUTHORIZED);
-                });
 
         JWTTokens jwtTokens = jwtUtils.createJwt(user.getId());
 
