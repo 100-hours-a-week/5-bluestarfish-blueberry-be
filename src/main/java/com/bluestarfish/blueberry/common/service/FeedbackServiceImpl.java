@@ -3,8 +3,9 @@ package com.bluestarfish.blueberry.common.service;
 import com.bluestarfish.blueberry.common.dto.FeedbackRequest;
 import com.bluestarfish.blueberry.common.dto.FeedbackResponse;
 import com.bluestarfish.blueberry.common.entity.Feedback;
-import com.bluestarfish.blueberry.common.exception.FeedbackException;
 import com.bluestarfish.blueberry.common.repository.FeedbackRepository;
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import java.util.List;
@@ -38,7 +39,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         List<Feedback> feedbacks = feedbackRepository.findAll();
 
         if (feedbacks.isEmpty()) {
-            throw new FeedbackException("Feedbacks Not found", HttpStatus.NOT_FOUND); // 예외 발생
+            throw new CustomException("Feedbacks Not found", ExceptionDomain.FEEDBACK, HttpStatus.NOT_FOUND); // 예외 발생
         }
 
         return feedbacks.stream()

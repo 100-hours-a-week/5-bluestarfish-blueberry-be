@@ -3,16 +3,16 @@ package com.bluestarfish.blueberry.room.service;
 import com.bluestarfish.blueberry.common.dto.UserRoomRequest;
 import com.bluestarfish.blueberry.common.dto.UserRoomResponse;
 import com.bluestarfish.blueberry.common.entity.UserRoom;
-import com.bluestarfish.blueberry.common.exception.UserRoomException;
 import com.bluestarfish.blueberry.common.repository.UserRoomRepository;
 import com.bluestarfish.blueberry.common.s3.S3Uploader;
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.room.dto.RoomDetailResponse;
 import com.bluestarfish.blueberry.room.dto.RoomPasswordRequest;
 import com.bluestarfish.blueberry.room.dto.RoomRequest;
 import com.bluestarfish.blueberry.room.dto.RoomResponse;
 import com.bluestarfish.blueberry.room.entity.Room;
-import com.bluestarfish.blueberry.room.exception.RoomException;
 import com.bluestarfish.blueberry.room.repository.RoomRepository;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
@@ -64,15 +64,15 @@ public class RoomServiceImpl implements RoomService {
 
         // 요청 보낸 유저 확인
         User user = userRepository.findByIdAndDeletedAtIsNull(roomRequest.getUserId())
-                .orElseThrow(() -> new RoomException("User not found with id: " + roomRequest.getUserId(), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("User not found with id: " + roomRequest.getUserId(), ExceptionDomain.ROOM, HttpStatus.NOT_FOUND));
 
         if (!tokenId.equals(user.getId())) {
-            throw new RoomException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.ROOM, HttpStatus.UNAUTHORIZED);
         }
 
         // 유저가 만든 스터디룸 개수 확인
         if(countRoomByUserID(user.getId()) >= 5) {
-            throw new RoomException("Too Many Room to Make More Rooms.", HttpStatus.FORBIDDEN);
+            throw new CustomException("Too Many Room to Make More Rooms.", ExceptionDomain.ROOM, HttpStatus.FORBIDDEN);
         }
 
         // 스터디룸 데이터 생성
@@ -101,7 +101,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public RoomDetailResponse getRoomById(Long id) {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Room not found with id: " + id, ExceptionDomain.ROOM, HttpStatus.NOT_FOUND));
         List<UserRoomResponse> userRooms = userRoomRepository.findByRoomIdAndIsActiveTrue(room.getId())
                 .stream().map(userRoom -> UserRoomResponse.from(userRoom, userRoom.getUser()))
                 .collect(Collectors.toList());
@@ -156,34 +156,34 @@ public class RoomServiceImpl implements RoomService {
 
         UserRoom userRoom = userRoomRepository.findByRoomIdAndIsHostTrue(id);
         if (!tokenId.equals(userRoom.getUser().getId())) {
-            throw new RoomException("Not match request ID and login ID", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Not match request ID and login ID", ExceptionDomain.ROOM, HttpStatus.UNAUTHORIZED);
         }
         Room room = roomRepository.findByIdAndDeletedAtIsNull(id)
-                .orElseThrow(() -> new RoomException("Room not found with id: " + id, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Room not found with id: " + id, ExceptionDomain.ROOM, HttpStatus.NOT_FOUND));
         room.setDeletedAt(LocalDateTime.now());
     }
 
     @Override
     public void entranceRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest) {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(roomId)
-                .orElseThrow(() -> new RoomException("Room not found this room id: " + roomId, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Room not found this room id: " + roomId, ExceptionDomain.ROOM, HttpStatus.NOT_FOUND));
         boolean needPassword = !room.getPassword().isEmpty();
         boolean isExisted = userRoomRepository.findByRoomIdAndUserId(roomId, userId).isPresent();
 
         if (needPassword) {
             if (userRoomRequest.getPassword() == null || !userRoomRequest.getPassword().equals(room.getPassword())) {
-                throw new RoomException("Password is not correct", HttpStatus.UNAUTHORIZED);
+                throw new CustomException("Password is not correct", ExceptionDomain.ROOM, HttpStatus.UNAUTHORIZED);
             }
         }
 
         if (isExisted) { // 재입장
 
             UserRoom userRoom = userRoomRepository.findByRoomIdAndUserId(roomId, userId)
-                    .orElseThrow(() -> new UserRoomException("UserRoom not found this user id: " + userId, HttpStatus.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException("UserRoom not found this user id: " + userId, ExceptionDomain.USERROOM, HttpStatus.NOT_FOUND));
             userRoom.setActive(true);
         } else { // 첫 입장
             User user = userRepository.findByIdAndDeletedAtIsNull(userId)
-                    .orElseThrow(() -> new UserRoomException("User not found this user id: " + userId, HttpStatus.NOT_FOUND));
+                    .orElseThrow(() -> new CustomException("User not found this user id: " + userId, ExceptionDomain.USERROOM, HttpStatus.NOT_FOUND));
             userRoomRepository.save(UserRoom.builder()
                     .user(user)
                     .room(room)
@@ -201,7 +201,7 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public void exitRoom(Long roomId, Long userId, UserRoomRequest userRoomRequest) {
         UserRoom userRoom = userRoomRepository.findByRoomIdAndUserId(roomId, userId)
-                .orElseThrow(() -> new UserRoomException("UserRoom not found this user id: " + userId, HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("UserRoom not found this user id: " + userId, ExceptionDomain.USERROOM, HttpStatus.NOT_FOUND));
         userRoom.setActive(false);
     }
 
@@ -213,10 +213,10 @@ public class RoomServiceImpl implements RoomService {
     @Override
     public void checkRoomPassword(RoomPasswordRequest roomPasswordRequest) {
         Room room = roomRepository.findByIdAndDeletedAtIsNull(roomPasswordRequest.getRoomId())
-                .orElseThrow(() -> new RoomException("Room not found this room id: " + roomPasswordRequest.getRoomId(), HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("Room not found this room id: " + roomPasswordRequest.getRoomId(), ExceptionDomain.ROOM, HttpStatus.NOT_FOUND));
 
         if (!roomPasswordRequest.getPassword().equals(room.getPassword())) {
-            throw new RoomException("Password verification failed.", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Password verification failed.", ExceptionDomain.ROOM, HttpStatus.UNAUTHORIZED);
         }
     }
 }
