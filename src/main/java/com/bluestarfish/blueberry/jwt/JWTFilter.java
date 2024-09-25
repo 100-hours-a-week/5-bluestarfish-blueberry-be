@@ -84,11 +84,6 @@ public class JWTFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        if (true) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
