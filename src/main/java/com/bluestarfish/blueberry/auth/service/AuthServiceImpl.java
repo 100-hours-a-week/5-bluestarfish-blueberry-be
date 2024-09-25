@@ -7,9 +7,10 @@ import com.bluestarfish.blueberry.auth.dto.MailRequest;
 import com.bluestarfish.blueberry.auth.entity.AuthCode;
 import com.bluestarfish.blueberry.auth.entity.RefreshToken;
 import com.bluestarfish.blueberry.auth.enumeration.MailAuthType;
-import com.bluestarfish.blueberry.auth.exception.AuthException;
 import com.bluestarfish.blueberry.auth.repository.AuthCodeRepository;
 import com.bluestarfish.blueberry.auth.repository.RefreshTokenRepository;
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.jwt.JWTTokens;
 import com.bluestarfish.blueberry.jwt.JWTUtils;
 import com.bluestarfish.blueberry.user.entity.User;
@@ -47,10 +48,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginSuccessResult login(LoginRequest loginRequest) {
         User user = userRepository.findByEmailAndDeletedAtIsNull(loginRequest.getEmail())
-                .orElseThrow(() -> new AuthException("A user with " + loginRequest.getEmail() + " does not exist", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("A user with " + loginRequest.getEmail() + " does not exist", ExceptionDomain.AUTH, HttpStatus.NOT_FOUND));
 
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            throw new AuthException("The password is not match", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("The password is not match", ExceptionDomain.AUTH, HttpStatus.UNAUTHORIZED);
         }
 
 
@@ -80,7 +81,7 @@ public class AuthServiceImpl implements AuthService {
         if (mailRequest.getType().equals(MailAuthType.JOIN.getType())) {
             userRepository.findByEmailAndDeletedAtIsNull(email)
                     .ifPresent(user -> {
-                        throw new AuthException("The email address already exists", HttpStatus.CONFLICT);
+                        throw new CustomException("The email address already exists", ExceptionDomain.AUTH, HttpStatus.CONFLICT);
                     });
         }
 
@@ -94,8 +95,9 @@ public class AuthServiceImpl implements AuthService {
                             .build()
             );
         } catch (MessagingException messagingException) {
-            throw new AuthException(
+            throw new CustomException(
                     "Internal Server Error",
+                    ExceptionDomain.AUTH,
                     HttpStatus.INTERNAL_SERVER_ERROR
             );
         }
@@ -105,14 +107,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public void authenticateCode(MailAuthRequest mailAuthRequest) {
         AuthCode authCode = authCodeRepository.findByEmail(mailAuthRequest.getEmail())
-                .orElseThrow(() -> new AuthException("No auth code found for the requested email address", HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException("No auth code found for the requested email address", ExceptionDomain.AUTH, HttpStatus.NOT_FOUND));
 
         if (Duration.between(authCode.getCreatedAt(), LocalDateTime.now()).toMinutes() > 5) {
-            throw new AuthException("The auth code has expired", HttpStatus.REQUEST_TIMEOUT);
+            throw new CustomException("The auth code has expired", ExceptionDomain.AUTH, HttpStatus.REQUEST_TIMEOUT);
         }
 
         if (!mailAuthRequest.getCode().equals(authCode.getCode())) {
-            throw new AuthException("Invalid code", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Invalid code", ExceptionDomain.AUTH, HttpStatus.UNAUTHORIZED);
         }
 
         // 인증성공하면 인증테이블에서 해당 데이터 코드값을 pass 로 수정

@@ -1,8 +1,9 @@
 package com.bluestarfish.blueberry.jwt;
 
 import com.bluestarfish.blueberry.auth.entity.RefreshToken;
-import com.bluestarfish.blueberry.auth.exception.AuthException;
 import com.bluestarfish.blueberry.auth.repository.RefreshTokenRepository;
+import com.bluestarfish.blueberry.exception.CustomException;
+import com.bluestarfish.blueberry.exception.ExceptionDomain;
 import com.bluestarfish.blueberry.user.entity.User;
 import com.bluestarfish.blueberry.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
@@ -83,11 +84,6 @@ public class JWTFilter extends OncePerRequestFilter {
             HttpServletResponse response,
             FilterChain filterChain
     ) throws ServletException, IOException {
-        if (true) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String requestUri = request.getRequestURI();
         String method = request.getMethod();
 
@@ -106,7 +102,7 @@ public class JWTFilter extends OncePerRequestFilter {
         // FIXME: 400번대 에러일 때는 클라이언트가 알 수 있도록 응답 핸들러를 통해서 예외를 전달해야 함
         Cookie[] cookies = request.getCookies();
         if (cookies == null) {
-            throw new AuthException("The cookie containing the user ID is absent", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("The cookie containing the user ID is absent", ExceptionDomain.AUTH, HttpStatus.UNAUTHORIZED);
         }
 
         String authorization = Arrays.stream(cookies)
@@ -118,11 +114,14 @@ public class JWTFilter extends OncePerRequestFilter {
         Long userId = jwtUtils.getId(authorization);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new AuthException("The user ID contained within the cookie is absent",
-                        HttpStatus.NOT_FOUND));
+                .orElseThrow(() -> new CustomException(
+                        "The user ID contained within the cookie is absent",
+                        ExceptionDomain.AUTH,
+                        HttpStatus.NOT_FOUND
+                ));
 
         if (!isToken(authorization)) {
-            throw new AuthException("Invalid Token", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Invalid Token", ExceptionDomain.AUTH, HttpStatus.UNAUTHORIZED);
         }
 
         try {
@@ -132,7 +131,7 @@ public class JWTFilter extends OncePerRequestFilter {
                 if (isExpired(refreshToken)) {
                     response.addCookie(removeAuthCookie());
                     discardRefreshToken(userId);
-                    throw new AuthException("Refresh Token is expired", HttpStatus.UNAUTHORIZED);
+                    throw new CustomException("Refresh Token is expired", ExceptionDomain.AUTH, HttpStatus.UNAUTHORIZED);
                 }
 
                 // 리프레쉬 토큰이 살아있다면
@@ -146,7 +145,7 @@ public class JWTFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
 
         } catch (EmptyResultDataAccessException e) {
-            throw new AuthException("Invalid access to token", HttpStatus.UNAUTHORIZED);
+            throw new CustomException("Invalid access to token", ExceptionDomain.AUTH, HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -170,8 +169,11 @@ public class JWTFilter extends OncePerRequestFilter {
 
     private RefreshToken findRefreshToken(Long userId) {
         return refreshTokenRepository.findByUserId(userId)
-                .orElseThrow(() -> new AuthException("No refresh token found for the user with " + userId,
-                        HttpStatus.UNAUTHORIZED));
+                .orElseThrow(() -> new CustomException(
+                        "No refresh token found for the user with " + userId,
+                        ExceptionDomain.AUTH,
+                        HttpStatus.UNAUTHORIZED
+                ));
     }
 
     private boolean isExpired(String token) {
