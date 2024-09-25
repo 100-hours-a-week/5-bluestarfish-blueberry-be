@@ -36,7 +36,7 @@ public class StudyTimeServiceImpl implements StudyTimeService {
             // QueryDSL을 사용하여 데이터 조회
             List<StudyTime> studyTimes = studyTimeRepository.findStudyTimesBetweenDates(userId, startDate, endDate);
             if(studyTimes.isEmpty()) {
-                throw new CustomException("No User Existed. userId : " + userId, ExceptionDomain.USER, HttpStatus.NOT_FOUND);
+                throw new CustomException("No Study Time Data for User. userId : " + userId, ExceptionDomain.USER, HttpStatus.NOT_FOUND);
             }
 
             Time totalTime = calculateTotalTime(studyTimes);
