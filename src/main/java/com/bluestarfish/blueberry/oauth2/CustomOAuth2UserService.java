@@ -33,7 +33,9 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
         String email = kakaoResponse.getEmail(); // 식별자 붙인 이메일
         Optional<User> foundUser = userRepository.findByEmail(email);
 
-        User user = foundUser.get();
+
+        User user = foundUser.orElse(null);
+
         if (user == null) {
             user = userRepository.save(
                     User.builder()

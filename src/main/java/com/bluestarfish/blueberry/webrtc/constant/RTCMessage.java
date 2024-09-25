@@ -26,4 +26,9 @@ public class RTCMessage {
     public static final String PING_PONG = "pingPong";
     public static final String PING_PONG_ANSWER = "pong";
     public static final String PING_PONG_QUESTION = "ping";
+    public static final String USER_ID = "userId";
+    public static final String PROFILE_IMAGE = "profileImage";
+    public static final String CAM_ENABLED = "camEnabled";
+    public static final String MIC_ENABLED = "micEnabled";
+    public static final String SPEAKER_ENABLED = "speakerEnabled";
 }
