@@ -22,7 +22,7 @@
 
 |                              Leader                               |                                 FE                                  |                                 FE                                 |                                  BE                                  |                                  BE                                  |
 |:-----------------------------------------------------------------:|:-------------------------------------------------------------------:|:------------------------------------------------------------------:|:--------------------------------------------------------------------:|:--------------------------------------------------------------------:|
-| <img src="assets/ian.jpeg" alt="이미지 설명" width="200" height="200"> | <img src="assets/ariel.jpeg" alt="이미지 설명" width="200" height="200"> | <img src="assets/andy.jpeg" alt="이미지 설명" width="200" height="200"> | <img src="assets/heiley.jpeg" alt="이미지 설명" width="200" height="200"> | <img src="assets/kanuda.jpeg" alt="이미지 설명" width="200" height="200"> | 
+| <img src="assets/ian.jpeg" alt="이미지 설명" width="150" height="150"> | <img src="assets/ariel.jpeg" alt="이미지 설명" width="150" height="150"> | <img src="assets/andy.jpeg" alt="이미지 설명" width="150" height="150"> | <img src="assets/heiley.jpeg" alt="이미지 설명" width="150" height="150"> | <img src="assets/kanuda.jpeg" alt="이미지 설명" width="150" height="150"> | 
 |              [Ian](https://github.com/BenchPress200)              |                [Ariel](https://github.com/yeji0214)                 |                 [Andy](https://github.com/boozeal)                 |               [Heiley](https://github.com/hyeonheeeee)               |                [Kanuda](https://github.com/DohunHyun)                |
 
 <br>
