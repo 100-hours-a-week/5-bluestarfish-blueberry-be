@@ -22,7 +22,7 @@
 
 |                 Leader                  |                  FE                  |                 FE                 |                    BE                    |                   BE                   |
 |:---------------------------------------:|:------------------------------------:|:----------------------------------:|:----------------------------------------:|:--------------------------------------:|
-|         ![ian](assets/ian.jpg)          |     ![ariel](assets/ariel.jpeg)      |     ![andy](assets/andy.jpeg)      |      ![Heiley](assets/heiley.jpeg)       |     ![Heiley](assets/kanuda.jpeg)      |
+|         ![ian](assets/ian.jpeg)         |     ![ariel](assets/ariel.jpeg)      |     ![andy](assets/andy.jpeg)      |      ![Heiley](assets/heiley.jpeg)       |     ![Heiley](assets/kanuda.jpeg)      |
 | [Ian](https://github.com/BenchPress200) | [Ariel](https://github.com/yeji0214) | [Andy](https://github.com/boozeal) | [Heiley](https://github.com/hyeonheeeee) | [Kanuda](https://github.com/DohunHyun) |
 
 <br>
