@@ -61,10 +61,7 @@
 
 ### 친구관리
 
-![](assets/f1.png)
-![](assets/f2.png)
-![](assets/f3.png)
-![](assets/f4.png)
+![](assets/f.gif)
 
 <br><br><br><br><br>
 
