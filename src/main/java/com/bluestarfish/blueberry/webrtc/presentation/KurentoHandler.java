@@ -1,7 +1,5 @@
 package com.bluestarfish.blueberry.webrtc.presentation;
 
-import com.bluestarfish.blueberry.webrtc.application.WebRTCRoomManager;
-import com.bluestarfish.blueberry.webrtc.application.WebRTCUserRegistry;
 import com.google.gson.JsonObject;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,8 +25,6 @@ import static com.bluestarfish.blueberry.webrtc.util.JsonMessageParser.extractMe
 public class KurentoHandler extends TextWebSocketHandler {
 
     private final MessageHandlerAdapter messageHandlerAdapter;
-    private final WebRTCUserRegistry webRTCUserRegistry;
-    private final WebRTCRoomManager webRTCRoomManager;
 
     @Override
     public void handleTextMessage(
