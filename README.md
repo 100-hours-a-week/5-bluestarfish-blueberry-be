@@ -67,7 +67,7 @@
 
 # 🔵 Project Architecture
 
-![architecture](assets/architecture.png)
+![architecture](assets/architecture_update.png)
 
 <br><br><br><br><br>
 
